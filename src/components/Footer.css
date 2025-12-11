@@ -1,0 +1,132 @@
+.footer-section {
+  border-top: 1px solid var(--border);
+  background-color: var(--background);
+  padding-top: 2rem;
+  padding-bottom: 1rem;
+}
+
+@media (min-width: 768px) {
+  .footer-section {
+    padding-top: 3rem;
+    padding-bottom: 1rem;
+  }
+}
+
+.footer-container {
+  padding-left: 1rem;
+  padding-right: 1rem;
+}
+
+@media (min-width: 768px) {
+  .footer-container {
+    padding-left: 1.5rem;
+    padding-right: 1.5rem;
+  }
+}
+
+.footer-grid {
+  display: grid;
+  gap: 1.5rem;
+}
+
+@media (min-width: 768px) {
+  .footer-grid {
+    grid-template-columns: repeat(3, minmax(0, 1fr));
+    gap: 2rem;
+  }
+}
+
+.footer-brand-section {
+  display: flex;
+  flex-direction: column;
+}
+
+.footer-brand-title {
+  color: var(--foreground);
+  font-size: 1.8rem;
+  font-weight: 600;
+}
+
+.footer-word-animation-container {
+  position: relative;
+  height: 2.5rem;
+  display: flex;
+  align-items: center;
+  overflow: hidden;
+}
+
+.footer-word-animation-item {
+  display: flex;
+  align-items: center;
+  gap: 0.5rem;
+  font-size: 1rem;
+  font-weight: 500;
+  color: var(--muted-foreground);
+}
+
+.footer-strength-icon {
+  object-fit: contain;
+}
+
+.footer-flexibility-text {
+  display: inline-block;
+  transform-origin: center;
+  font-weight: 600;
+}
+
+.footer-mindfulness-text {
+  position: relative;
+  font-weight: 600;
+  color: var(--primary);
+}
+
+.footer-links-group-one,
+.footer-links-group-two {
+  display: flex;
+  flex-direction: column;
+  gap: 0.375rem;
+  font-size: 1rem;
+  align-items: flex-start;
+  margin-top: 1.5rem;
+}
+
+.footer-link {
+  display: inline-block;
+  color: var(--foreground);
+  transition-property: color;
+  transition-duration: 150ms;
+  transition-timing-function: cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.footer-link:hover {
+  text-decoration: underline;
+  color: var(--primary);
+}
+
+.footer-social-icons {
+  display: flex;
+  justify-content: flex-end;
+  gap: 1rem;
+  margin-top: 1.5rem;
+  margin-bottom: 1rem;
+}
+
+.footer-social-icons svg {
+  width: 24px;
+  height: 24px;
+  color: var(--muted-foreground);
+  transition: color 0.15s ease-in-out;
+}
+
+.footer-social-icons a:hover svg {
+  color: var(--primary);
+}
+
+.footer-copyright {
+  margin-top: 1rem;
+  border-top: 1px solid var(--border);
+  padding-top: 0.75rem;
+  text-align: center;
+  font-size: 0.75rem;
+  color: var(--muted-foreground);
+}

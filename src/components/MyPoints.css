@@ -1,0 +1,49 @@
+.my-points-widget {
+  position: relative;
+  cursor: pointer;
+}
+
+.points-summary {
+  font-size: 14px;
+  font-weight: 500;
+  color: #333;
+}
+
+.points-panel {
+  position: absolute;
+  top: 100%;
+  right: 0;
+  width: 200px;
+  padding: 15px;
+  background-color: #fff;
+  border: 1px solid #ccc;
+  border-radius: 5px;
+  box-shadow: 0 2px 5px rgba(0, 0, 0, 0.1);
+  z-index: 1000;
+}
+
+.points-panel h3 {
+  margin-top: 0;
+  font-size: 16px;
+  font-weight: 600;
+}
+
+.points-panel ul {
+  list-style: none;
+  padding: 0;
+  margin: 0 0 15px;
+}
+
+.points-panel li {
+  font-size: 14px;
+  margin-bottom: 5px;
+}
+
+.plans-link {
+  display: block;
+  text-align: center;
+  font-size: 14px;
+  font-weight: 500;
+  color: #007bff;
+  text-decoration: none;
+}

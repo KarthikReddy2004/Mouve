@@ -1,0 +1,28 @@
+/* SocialIcons.css */
+
+.facebook-icon-primary-path {
+  fill: #0866ff;
+  fill-opacity: 1;
+  fill-rule: nonzero;
+  stroke: none;
+}
+
+.facebook-icon-secondary-path {
+  fill: #fff;
+  fill-opacity: 1;
+  fill-rule: nonzero;
+  stroke: none;
+}
+
+.whatsapp-icon-path {
+  fill: #25D366;
+  fill-rule: evenodd;
+}
+
+.twitter-icon-path {
+  fill: #55acee;
+}
+
+.linkedin-icon-path {
+  fill: #0A66C2;
+}

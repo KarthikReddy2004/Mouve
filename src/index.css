@@ -1,0 +1,175 @@
+@import "tailwindcss";
+
+/* -------------------------------------------------------
+   Modern Studio-Inspired Theme (Light Mode)
+------------------------------------------------------- */
+:root {
+  --background: #F4EFE9;
+  --foreground: #1A1A1A;
+
+  --card: #E3DED7;
+  --popover: #FFFFFF;
+
+  --primary: #D3BFA6;
+  --primary-foreground: #1A1A1A;
+
+  --secondary: #70808D;
+  --secondary-foreground: #F4EFE9;
+
+  --accent: #C4934B;
+  --accent-foreground: #1A1A1A;
+
+  --muted: #EAE3DC;
+  --muted-foreground: #7C7C7C;
+
+  --border: #D8D2C8;
+  --input: #D8D2C8;
+  --ring: #C4934B;
+
+  --destructive: #B6383A;
+  --destructive-foreground: #FFFFFF;
+
+  --radius: 0.625rem;
+  --spacing: 0.25rem;
+
+  /* Sidebar */
+  --sidebar: #E8E2DA;
+  --sidebar-foreground: #1A1A1A;
+  --sidebar-accent: #D7B98C;
+  --sidebar-accent-foreground: #1A1A1A;
+  --sidebar-border: #DCD1C5;
+  --sidebar-primary: #D3BFA6;
+  --sidebar-primary-foreground: #1A1A1A;
+
+  --chart-1: #D3BFA6;
+  --chart-2: #C4934B;
+  --chart-3: #70808D;
+  --chart-4: #7A5235;
+  --chart-5: #B6383A;
+
+  --font-sans: ui-sans-serif, system-ui, -apple-system, BlinkMacSystemFont,
+    "Segoe UI", Roboto, "Helvetica Neue", Arial, "Noto Sans", sans-serif;
+  --font-serif: ui-serif, Georgia, Cambria, "Times New Roman", Times, serif;
+  --font-mono: ui-monospace, SFMono-Regular, Menlo, Monaco, Consolas,
+    "Liberation Mono", "Courier New", monospace;
+}
+
+/* -------------------------------------------------------
+   Dark Mode (Warm, Expressive, Cinematic)
+------------------------------------------------------- */
+.dark {
+  --background: #1E1E1E;
+  --foreground: #F4EFE9;
+
+  --card: #2A2A2A;
+  --popover: #2A2A2A;
+
+  --primary: #BBA58C;
+  --primary-foreground: #1A1A1A;
+
+  --secondary: #55626E;
+  --secondary-foreground: #F4EFE9;
+
+  --accent: #C4934B;
+  --accent-foreground: #1A1A1A;
+
+  --muted: #3A3A3A;
+  --muted-foreground: #BEBEBE;
+
+  --border: #3D3D3D;
+  --input: #3D3D3D;
+  --ring: #C4934B;
+
+  --destructive: #CF4B4B;
+  --destructive-foreground: #FFFFFF;
+
+  --sidebar: #242424;
+  --sidebar-foreground: #F4EFE9;
+  --sidebar-accent: #4B3A24;
+  --sidebar-accent-foreground: #F4EFE9;
+  --sidebar-border: #3A3A3A;
+  --sidebar-primary: #BBA58C;
+  --sidebar-primary-foreground: #1A1A1A;
+
+  --chart-1: #BBA58C;
+  --chart-2: #C4934B;
+  --chart-3: #55626E;
+  --chart-4: #4A3423;
+  --chart-5: #CF4B4B;
+}
+
+/* -------------------------------------------------------
+   Tailwind Theme Mapping
+------------------------------------------------------- */
+@theme inline {
+  --color-background: var(--background);
+  --color-foreground: var(--foreground);
+  --color-card: var(--card);
+  --color-popover: var(--popover);
+
+  --color-primary: var(--primary);
+  --color-primary-foreground: var(--primary-foreground);
+
+  --color-secondary: var(--secondary);
+  --color-secondary-foreground: var(--secondary-foreground);
+
+  --color-accent: var(--accent);
+  --color-accent-foreground: var(--accent-foreground);
+
+  --color-muted: var(--muted);
+  --color-muted-foreground: var(--muted-foreground);
+
+  --color-border: var(--border);
+  --color-input: var(--input);
+  --color-ring: var(--ring);
+
+  --color-destructive: var(--destructive);
+  --color-destructive-foreground: var(--destructive-foreground);
+
+  --color-sidebar: var(--sidebar);
+  --color-sidebar-foreground: var(--sidebar-foreground);
+  --color-sidebar-accent: var(--sidebar-accent);
+  --color-sidebar-accent-foreground: var(--sidebar-accent-foreground);
+  --color-sidebar-border: var(--sidebar-border);
+  --color-sidebar-primary: var(--sidebar-primary);
+  --color-sidebar-primary-foreground: var(--sidebar-primary-foreground);
+
+  --color-chart-1: var(--chart-1);
+  --color-chart-2: var(--chart-2);
+  --color-chart-3: var(--chart-3);
+  --color-chart-4: var(--chart-4);
+  --color-chart-5: var(--chart-5);
+
+  --radius: var(--radius);
+  --spacing: var(--spacing);
+  --font-sans: var(--font-sans);
+  --font-serif: var(--font-serif);
+  --font-mono: var(--font-mono);
+}
+
+/* -------------------------------------------------------
+   Scrollbars
+------------------------------------------------------- */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background-color: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background-color: var(--muted-foreground);
+  border-radius: var(--radius);
+  border: 2px solid var(--background);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background-color: var(--foreground);
+}
+
+* {
+  scrollbar-width: thin;
+  scrollbar-color: var(--muted-foreground) var(--background);
+}
