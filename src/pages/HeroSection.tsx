@@ -19,13 +19,13 @@ const instructors = [
   {
     name: "Hemanth",
     role: "Founder & Lead Instructor",
-    desc: "500HR RYT • Reformer Certified • 10+ years",
+    desc: "Reformer Certified",
     img: "/Hemanth.jpeg",
   },
   {
     name: "Yashoda",
     role: "Hot Yoga & Mindfulness Coach",
-    desc: "ERYT-200 • Trauma-Informed • Meditation Guide",
+    desc: "Meditation Guide",
     img: "/Yashoda.jpeg",
   },
 ];
