@@ -4,8 +4,7 @@ import { useEffect, useState } from "react";
 import { useNavigate, Outlet } from "react-router-dom";
 import { useAuth } from "@/hooks/useAuth";
 import Loading from "./Loading";
-import LoginModal from "./Login"; // Assuming you have a LoginModal component
-// import { auth } from "../../firebase"; // This import is not used in ProtectedRoute
+import LoginModal from "./Login";
 
 interface ProtectedRouteProps {
   redirectPath?: string;
@@ -16,14 +15,13 @@ export default function ProtectedRoute({
   redirectPath = "/",
   onboardingPath = "/onboarding",
 }: ProtectedRouteProps) {
-  const { user, loading, isUserOnboarded } = useAuth(); // Get isUserOnboarded from AuthContext
+  const { user, loading, isUserOnboarded } = useAuth();
   const navigate = useNavigate();
   const [showLoginModal, setShowLoginModal] = useState(false);
 
   useEffect(() => {
     if (!loading) {
       if (!user) {
-        // User is not authenticated, show login modal
         setShowLoginModal(true);
       } else {
         setShowLoginModal(false);
@@ -41,7 +39,11 @@ export default function ProtectedRoute({
     }
   }, [loading, user, isUserOnboarded, navigate, onboardingPath]);
 
-  if (loading || isUserOnboarded === null) { // Show loading while onboarding status is being determined
+  if (loading) {
+    return <Loading />;
+  }
+
+  if (user && isUserOnboarded === null) {
     return <Loading />;
   }
 

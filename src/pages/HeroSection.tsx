@@ -1,267 +1,265 @@
 "use client";
 
 import { motion } from "framer-motion";
+import { useState } from "react";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
-import { useState } from "react";
 import LoginModal from "@/components/Login";
-import "./HeroSection.css";
 
-const classes = [
+/* Animation variants */
+const fadeUp = {
+  hidden: { opacity: 0, y: 30 },
+  show: { opacity: 1, y: 0 },
+};
+
+const fadeScale = {
+  hidden: { opacity: 0, scale: 0.9 },
+  show: { opacity: 1, scale: 1 },
+};
+
+/* Static Data */
+const classes = Object.freeze([
   { name: "Reformer Pilates", desc: "Core strength & posture on the reformer" },
   { name: "Mat Pilates", desc: "Bodyweight precision and control" },
   { name: "Hatha Yoga", desc: "Classical yoga for balance and calm" },
   { name: "Hot Pilates", desc: "High-intensity in infrared heat" },
   { name: "Hot Yoga", desc: "Detoxifying flow in 38°C warmth" },
-];
+]);
 
-const instructors = [
+const instructors = Object.freeze([
   {
     name: "Hemanth",
-    role: "Founder & Lead Instructor",
-    desc: "Reformer Certified",
+    role: "Fitness coach • Bodybuilder • Nutritionist",
+    desc: "Pilates Certifies • 10+ years experience",
     img: "/Hemanth.jpeg",
   },
   {
-    name: "Yashoda",
-    role: "Hot Yoga & Mindfulness Coach",
-    desc: "Meditation Guide",
+    name: "Yashoda Gangadhar",
+    role: "Yoga and Pilates coach • Clinical Nutritionist",
+    desc: "Reformer Certified • 5+ years experience",
     img: "/Yashoda.jpeg",
   },
-];
+  {
+    name: "Sunil",
+    role: "Fitness Enthusiast",
+    desc: "Reformer Certified",
+    img: "",
+  },
+]);
 
-const testimonials = [
+const testimonials = Object.freeze([
   {
     name: "User1",
     text: "Best studio in the city. The attention to detail and energy is unmatched.",
   },
-  {
-    name: "User2",
-    text: "Transformed my posture and back pain in just 2 months of Reformer classes.",
-  },
-  {
-    name: "User3",
-    text: "Finally found a place that feels like home. The hot yoga classes are life-changing.",
-  },
-];
+  // {
+  //   name: "User2",
+  //   text: "Transformed my posture and back pain in just 2 months of Reformer classes.",
+  // },
+  // {
+  //   name: "User3",
+  //   text: "Finally found a place that feels like home. The hot yoga classes are life-changing.",
+  // },
+]);
 
+/* Landing Page Component */
 export default function LandingPage() {
   const [loginOpen, setLoginOpen] = useState(false);
 
   return (
     <>
-      {/* HERO SECTION */}
-      <section className="hero-section min-h-screen flex items-center justify-center relative bg-background">
-        <div className="background-pattern opacity-30" />
+      {/* HERO */}
+      <section className="relative min-h-screen flex items-center justify-center overflow-hidden text-center px-4 sm:px-6">
+        <div className="absolute inset-0 -z-10">
+          <img
+            src="/DSC06470.jpeg"
+            alt=""
+            aria-hidden="true"
+            loading="eager"
+            fetchPriority="high"
+            decoding="async"
+            className="w-full h-full object-cover"
+          />
+          <div className="absolute inset-0 bg-black/30" />
+        </div>
 
-        <div className="container relative z-10 text-center px-6">
-          <motion.div
-            initial={{ opacity: 0, y: 40 }}
-            animate={{ opacity: 1, y: 0 }}
-            transition={{ duration: 1 }}
-            className="space-y-8 max-w-5xl mx-auto"
+        <div className="max-w-4xl mx-auto space-y-8 sm:space-y-10 text-white">
+          <motion.h1
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            className="text-4xl sm:text-6xl md:text-7xl font-bold tracking-wide"
           >
-            <h1 className="main-headline text-foreground">Mouve</h1>
+            MOUVE
+          </motion.h1>
 
-            <p className="subheadline text-xl md:text-3xl font-light text-muted-foreground">
-              Strength • Flexibility • Mindfulness
-            </p>
+          <motion.p
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ delay: 0.1 }}
+            className="text-lg sm:text-2xl font-light"
+          >
+            Strength • Flexibility • Mindfulness
+          </motion.p>
 
-            {/* CLASS TAGS */}
-            <div className="flex flex-wrap justify-center gap-4 my-10">
-              {classes.map((c, i) => (
-                <motion.span
-                  key={c.name}
-                  initial={{ opacity: 0, scale: 0.8 }}
-                  animate={{ opacity: 1, scale: 1 }}
-                  transition={{ delay: 0.6 + i * 0.1 }}
-                  className="px-6 py-3 bg-foreground/5 backdrop-blur-sm border border-border rounded-full text-sm md:text-base"
-                >
-                  {c.name}
-                </motion.span>
-              ))}
-            </div>
+          {/* Class Tags */}
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            className="flex flex-wrap justify-center gap-2 sm:gap-4"
+          >
+            {classes.map((c, i) => (
+              <motion.span
+                key={c.name}
+                variants={fadeScale}
+                initial="hidden"
+                animate="show"
+                transition={{ delay: 0.2 + i * 0.1 }}
+                className="px-3 sm:px-6 py-2 bg-white/70 text-black rounded-full text-sm sm:text-base"
+              >
+                {c.name}
+              </motion.span>
+            ))}
+          </motion.div>
 
-            {/* CTA BUTTONS */}
-            <motion.div
-              initial={{ opacity: 0, y: 30 }}
-              animate={{ opacity: 1, y: 0 }}
-              transition={{ delay: 0.8 }}
-              className="flex flex-col sm:flex-row gap-6 justify-center"
+          {/* CTA Buttons */}
+          <motion.div
+            variants={fadeUp}
+            initial="hidden"
+            animate="show"
+            transition={{ delay: 0.5 }}
+            className="flex flex-col sm:flex-row gap-4 justify-center pt-6 w-full"
+          >
+            <Button
+              size="lg"
+              className="w-full sm:w-auto px-6 py-4 text-lg rounded-full shadow-xl"
+              onClick={() => setLoginOpen(true)}
+              aria-label="Book your first class at MOUVE"
             >
-              {/* Primary Button */}
-              <Button
-                size="lg"
-                className="bg-primary text-primary-foreground px-12 py-7 text-lg rounded-full shadow-xl"
-                onClick={() => setLoginOpen(true)}
-              >
-                Book a Class
-              </Button>
-
-              {/* Secondary */}
-              <Button
-                asChild
-                size="lg"
-                variant="outline"
-                className="border-border text-foreground px-12 py-7 text-lg rounded-full"
-              >
-                <a href="#about">Learn More</a>
-              </Button>
-            </motion.div>
+              Claim Your Free Class
+            </Button>
+            <Button
+              asChild
+              size="lg"
+              variant="outline"
+              className="w-full sm:w-auto px-6 py-4 text-lg rounded-full bg-white/10 text-white border-white/30"
+            >
+              <a href="#classes">Learn More</a>
+            </Button>
           </motion.div>
         </div>
       </section>
 
-      {/* CLASSES GRID */}
-      <section className="py-20 px-6 bg-muted">
-        <div className="container max-w-6xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-light text-center mb-16 text-foreground"
-          >
-            Our Classes
-          </motion.h2>
+      {/* CLASSES */}
+      <section id="classes" className="py-20 bg-muted px-4 sm:px-6" aria-labelledby="classes-heading">
+        <h2 id="classes-heading" className="text-3xl sm:text-4xl md:text-5xl text-foreground font-light text-center mb-12">
+          Our Classes
+        </h2>
 
-          <div className="grid md:grid-cols-3 gap-8">
-            {classes.map((cls, i) => (
-              <motion.div
-                key={cls.name}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
-              >
-                <Card className="p-10 text-center hover:shadow-2xl transition-shadow border border-border bg-card">
-                  <h3 className="text-2xl font-medium text-foreground mb-4">
-                    {cls.name}
-                  </h3>
-                  <p className="text-muted-foreground">{cls.desc}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+        <div className="max-w-6xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {classes.map((cls, i) => (
+            <motion.div
+              key={cls.name}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <Card className="p-6 sm:p-10 text-center hover:shadow-2xl transition-all">
+                <h3 className="text-xl sm:text-2xl text-muted-foreground font-medium mb-2">{cls.name}</h3>
+                <p className="text-muted-foreground text-sm sm:text-base">{cls.desc}</p>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* ABOUT */}
-      <section id="about" className="py-24 px-6 bg-background">
-        <div className="container max-w-4xl mx-auto text-center">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-light mb-10 text-foreground"
-          >
-            Move with Intention
-          </motion.h2>
-
-          <motion.p
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            transition={{ delay: 0.2 }}
-            viewport={{ once: true }}
-            className="text-xl text-muted-foreground leading-relaxed max-w-3xl mx-auto"
-          >
-            At Mouve, we believe movement is medicine…
-          </motion.p>
-        </div>
+      <section id="about" className="py-20 bg-background text-center px-4 sm:px-6">
+        <motion.h2 variants={fadeUp} initial="hidden" whileInView="show" className="text-3xl text-foreground sm:text-4xl md:text-5xl font-light mb-6">
+          Move with Intention
+        </motion.h2>
+        <motion.p
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          transition={{ delay: 0.2 }}
+          className="text-base sm:text-lg md:text-xl text-muted-foreground max-w-3xl mx-auto"
+        >
+          At MOUVE, we believe movement is medicine — a way to strengthen the body, calm the mind, and elevate everyday life.
+        </motion.p>
       </section>
 
       {/* INSTRUCTORS */}
-      <section className="py-20 px-6 bg-muted">
-        <div className="container max-w-7xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-light text-center mb-16 text-foreground"
-          >
-            Meet Your Guides
-          </motion.h2>
-
-          <div className="grid md:grid-cols-4 gap-10">
-            {instructors.map((inst, i) => (
+      <section className="py-20 bg-muted px-4 sm:px-6">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl text-foreground font-light text-center mb-12">Meet Our Founders</h2>
+        <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {instructors.map((inst, i) => {
+            const imageSrc = inst.img?.trim() || "/placeholder-avatar.jpg";
+            return (
               <motion.div
                 key={inst.name}
-                initial={{ opacity: 0, y: 40 }}
-                whileInView={{ opacity: 1, y: 0 }}
+                variants={fadeUp}
+                initial="hidden"
+                whileInView="show"
                 viewport={{ once: true }}
-                transition={{ delay: i * 0.15 }}
+                transition={{ delay: i * 0.1 }}
                 className="text-center"
               >
-                <div className="relative mx-auto w-64 h-64 rounded-3xl overflow-hidden shadow-2xl mb-6">
+                <div className="mx-auto w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden shadow-2xl mb-4">
                   <img
-                    src={inst.img}
+                    src={imageSrc}
+                    alt={`${inst.name}, ${inst.role}`}
                     className="w-full h-full object-cover"
-                    alt="Instructor"
+                    loading="lazy"
+                    decoding="async"
                   />
                 </div>
-                <h3 className="text-xl font-medium text-foreground">
-                  {inst.name}
-                </h3>
-                <p className="text-sm text-muted-foreground mt-1">
-                  {inst.role}
-                </p>
-                <p className="text-xs text-muted-foreground mt-2">
-                  {inst.desc}
-                </p>
+                <h3 className="text-lg sm:text-xl text-foreground font-medium">{inst.name}</h3>
+                <p className="text-sm text-muted-foreground mt-1">{inst.role}</p>
+                <p className="text-xs text-muted-foreground mt-1">{inst.desc}</p>
               </motion.div>
-            ))}
-          </div>
+            );
+          })}
         </div>
       </section>
 
       {/* TESTIMONIALS */}
-      <section className="py-20 px-6 bg-foreground text-background">
-        <div className="container max-w-5xl mx-auto">
-          <motion.h2
-            initial={{ opacity: 0 }}
-            whileInView={{ opacity: 1 }}
-            viewport={{ once: true }}
-            className="text-4xl md:text-5xl font-light text-center mb-16"
-          >
-            Loved by Our Community
-          </motion.h2>
-
-          <div className="grid md:grid-cols-3 gap-10">
-            {testimonials.map((t, i) => (
-              <motion.div
-                key={i}
-                initial={{ opacity: 0, y: 30 }}
-                whileInView={{ opacity: 1, y: 0 }}
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.2 }}
-              >
-                <Card className="p-8 bg-background/10 backdrop-blur border-border">
-                  <p className="text-lg italic mb-6">“{t.text}”</p>
-                  <p className="font-medium">— {t.name}</p>
-                </Card>
-              </motion.div>
-            ))}
-          </div>
+      <section className="py-20 bg-foreground text-background px-4 sm:px-6">
+        <h2 className="text-3xl sm:text-4xl md:text-5xl font-light text-center mb-12">Loved by Our Community</h2>
+        <div className="max-w-5xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+          {testimonials.map((t, i) => (
+            <motion.div
+              key={i}
+              variants={fadeUp}
+              initial="hidden"
+              whileInView="show"
+              viewport={{ once: true }}
+              transition={{ delay: i * 0.1 }}
+            >
+              <Card className="p-6 sm:p-8 bg-background/10 backdrop-blur border-border">
+                <p className="text-base sm:text-lg italic mb-4">“{t.text}”</p>
+                <p className="font-medium">— {t.name}</p>
+              </Card>
+            </motion.div>
+          ))}
         </div>
       </section>
 
       {/* FINAL CTA */}
-      <section className="py-24 px-6 bg-accent text-accent-foreground">
-        <div className="container text-center">
-          <h2 className="text-4xl md:text-6xl font-light mb-8">
-            Your Journey Starts Here
-          </h2>
-          <p className="text-xl mb-10">
-            First class is on us. Claim your complimentary session today.
-          </p>
-
-          <Button
-            size="lg"
-            className="bg-foreground text-background hover:bg-muted px-12 py-8 text-xl rounded-full shadow-2xl"
-            onClick={() => setLoginOpen(true)}
-          >
-            Book your class NOW!
-          </Button>
-        </div>
+      <section className="py-20 bg-accent text-accent-foreground text-center px-4 sm:px-6">
+        <h2 className="text-3xl sm:text-4xl md:text-6xl font-light mb-4">Your Journey Starts Here</h2>
+        <p className="text-base sm:text-lg md:text-xl mb-6">First class is on us. Claim your complimentary session today.</p>
+        <Button
+          size="lg"
+          className="w-full sm:w-auto px-6 py-4 text-lg sm:text-xl rounded-full shadow-2xl"
+          onClick={() => setLoginOpen(true)}
+        >
+          Book Your Class Now
+        </Button>
       </section>
 
       <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />

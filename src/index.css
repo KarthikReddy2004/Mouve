@@ -1,8 +1,5 @@
 @import "tailwindcss";
 
-/* -------------------------------------------------------
-   Modern Studio-Inspired Theme (Light Mode)
-------------------------------------------------------- */
 :root {
   --background: #F4EFE9;
   --foreground: #1A1A1A;
@@ -32,7 +29,6 @@
   --radius: 0.625rem;
   --spacing: 0.25rem;
 
-  /* Sidebar */
   --sidebar: #E8E2DA;
   --sidebar-foreground: #1A1A1A;
   --sidebar-accent: #D7B98C;
@@ -54,9 +50,6 @@
     "Liberation Mono", "Courier New", monospace;
 }
 
-/* -------------------------------------------------------
-   Dark Mode (Warm, Expressive, Cinematic)
-------------------------------------------------------- */
 .dark {
   --background: #1E1E1E;
   --foreground: #F4EFE9;
@@ -98,9 +91,6 @@
   --chart-5: #CF4B4B;
 }
 
-/* -------------------------------------------------------
-   Tailwind Theme Mapping
-------------------------------------------------------- */
 @theme inline {
   --color-background: var(--background);
   --color-foreground: var(--foreground);
@@ -147,9 +137,6 @@
   --font-mono: var(--font-mono);
 }
 
-/* -------------------------------------------------------
-   Scrollbars
-------------------------------------------------------- */
 ::-webkit-scrollbar {
   width: 8px;
   height: 8px;

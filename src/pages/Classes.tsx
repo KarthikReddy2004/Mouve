@@ -68,6 +68,44 @@ const Classes: React.FC = () => {
   const isMounted = useRef(true);
   const auth = getAuth();
 
+  type CategoryKey = "HOT" | "MAT" | "REFORMER";
+
+  const CATEGORY_ORDER: CategoryKey[] = ["HOT", "MAT", "REFORMER"];
+  const TYPE_LABELS: Record<string, string> = {
+    HOT_YOGA: "Hot Yoga",
+    HOT_PILATES: "Hot Pilates",
+    HATHA: "Hatha Yoga",
+    MAT: "Mat Pilates",
+    REFORMER: "Reformer",
+  };
+
+  const CATEGORY_CONFIG: Record<
+    CategoryKey,
+    { title: string; types: string[] }
+  > = {
+    HOT: {
+      title: "Hot Yoga / Hot Pilates",
+      types: ["HOT_YOGA", "HOT_PILATES"],
+    },
+    MAT: {
+      title: "Hatha Yoga / Mat Pilates",
+      types: ["HATHA", "MAT"],
+    },
+    REFORMER: {
+      title: "Reformer Pilates",
+      types: ["REFORMER"],
+    },
+  };
+
+  const categorizedSlots = CATEGORY_ORDER.map((key) => {
+  const { title, types } = CATEGORY_CONFIG[key];
+    return {
+      key,
+      title,
+      slots: slots.filter((slot) => types.includes(slot.type)),
+    };
+  }).filter((category) => category.slots.length > 0);
+
   // === Accurate India Time (IST) - 100% Safe ===
   useEffect(() => {
     isMounted.current = true;
@@ -302,91 +340,92 @@ const Classes: React.FC = () => {
         )}
 
         {/* Classes Grid */}
-        {!loading && !studioClosed && slots.length > 0 && (
-          <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8 mt-10">
-            {slots.map((slot) => {
-              const spots = remainingSlots[slot.id] ?? 0;
-              const { canBook } = getBookableStatus(slot);
-              const isLow = spots <= 3 && spots > 0;
+        {!loading && !studioClosed && categorizedSlots.length > 0 && (
+          <div className="space-y-16 mt-10">
+            {categorizedSlots.map((category) => (
+              <section key={category.key}>
+                {/* Category Title */}
+                <h2 className="text-3xl font-bold mb-8">
+                  {category.title}
+                </h2>
 
-              return (
-                <Card
-                  key={slot.id}
-                  className={`overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
-                    !slot.active ? "opacity-60" : ""
-                  } ${canBook ? "border-primary/20" : ""}`}
-                >
-                  <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
-                    <div className="flex justify-between items-start">
-                      <CardTitle className="text-2xl font-bold">
-                        {slot.name}
-                      </CardTitle>
-                      <Badge
-                        variant={
-                          slot.type === "Hot Pilates"
-                            ? "destructive"
-                            : "default"
-                        }
+                {/* Category Grid */}
+                <div className="grid grid-cols-1 md:grid-cols-2 xl:grid-cols-3 gap-8">
+                  {category.slots.map((slot) => {
+                    const spots = remainingSlots[slot.id] ?? 0;
+                    const { canBook } = getBookableStatus(slot);
+                    const isLow = spots <= 3 && spots > 0;
+
+                    return (
+                      <Card
+                        key={slot.id}
+                        className={`overflow-hidden transition-all duration-300 hover:shadow-2xl hover:-translate-y-1 ${
+                          !slot.active ? "opacity-60" : ""
+                        } ${canBook ? "border-primary/20" : ""}`}
                       >
-                        {slot.type}
-                      </Badge>
-                    </div>
-                  </CardHeader>
+                        <CardHeader className="bg-gradient-to-r from-primary/5 to-primary/10">
+                          <div className="flex justify-between items-start">
+                            <CardTitle className="text-2xl font-bold">
+                              {slot.name}
+                            </CardTitle>
+                            <Badge
+                              variant={slot.type.startsWith("HOT") ? "destructive" : "default"}
+                            >
+                              {TYPE_LABELS[slot.type]}
+                            </Badge>
+                          </div>
+                        </CardHeader>
 
-                  <CardContent className="pt-6">
-                    <div className="flex items-center gap-3 text-3xl font-bold mb-3">
-                      <Clock className="w-8 h-8 text-primary" />
-                      <span>
-                        {slot.startTime} – {slot.endTime}
-                      </span>
-                    </div>
+                        <CardContent >
+                          <div className="flex items-center gap-3 text-3xl font-bold mb-3">
+                            <Clock className="w-8 h-8 text-primary" />
+                            <span>
+                              {slot.timeLabel}
+                            </span>
+                          </div>
 
-                    {slot.timeLabel && (
-                      <p className="text-sm text-muted-foreground bg-muted/50 px-3 py-1 rounded-full inline-block mb-4">
-                        {slot.timeLabel}
-                      </p>
-                    )}
+                          <div className="flex items-center justify-between mt-8">
+                            <div>
+                              <p
+                                className={`text-2xl font-bold ${
+                                  isLow
+                                    ? "text-red-600 animate-pulse"
+                                    : "text-foreground"
+                                }`}
+                              >
+                                {spots} {spots === 1 ? "spot" : "spots"} left
+                              </p>
+                              <p className="text-sm text-muted-foreground">
+                                of {slot.capacity} total
+                              </p>
+                            </div>
 
-                    <div className="flex items-center justify-between mt-8">
-                      <div>
-                        <p
-                          className={`text-2xl font-bold ${
-                            isLow
-                              ? "text-red-600 animate-pulse"
-                              : "text-foreground"
-                          }`}
-                        >
-                          {spots} {spots === 1 ? "spot" : "spots"} left
-                        </p>
-                        <p className="text-sm text-muted-foreground">
-                          of {slot.capacity} total
-                        </p>
-                      </div>
-
-                      <Button
-                        size="lg"
-                        onClick={() => handleBook(slot)}
-                        disabled={!canBook}
-                        className={`min-w-32 font-semibold text-lg ${
-                          canBook
-                            ? "bg-primary hover:bg-primary/90 shadow-lg"
-                            : "bg-muted text-muted-foreground cursor-not-allowed"
-                        }`}
-                      >
-                        {canBook
-                          ? "Book Now"
-                          : spots === 0
-                          ? "Full"
-                          : "Unavailable"}
-                      </Button>
-                    </div>
-                  </CardContent>
-                </Card>
-              );
-            })}
+                            <Button
+                              size="lg"
+                              onClick={() => handleBook(slot)}
+                              disabled={!canBook}
+                              className={`min-w-32 font-semibold text-lg ${
+                                canBook
+                                  ? "bg-primary hover:bg-primary/90 shadow-lg"
+                                  : "bg-muted text-muted-foreground cursor-not-allowed"
+                              }`}
+                            >
+                              {canBook
+                                ? "Book Now"
+                                : spots === 0
+                                ? "Full"
+                                : "Unavailable"}
+                            </Button>
+                          </div>
+                        </CardContent>
+                      </Card>
+                    );
+                  })}
+                </div>
+              </section>
+            ))}
           </div>
         )}
-      </div>
 
       {/* Confirm Dialog */}
       <AlertDialog
@@ -423,6 +462,7 @@ const Classes: React.FC = () => {
           </AlertDialogFooter>
         </AlertDialogContent>
       </AlertDialog>
+    </div>
     </div>
   );
 };

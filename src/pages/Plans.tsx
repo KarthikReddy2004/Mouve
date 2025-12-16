@@ -512,27 +512,26 @@ export default function PlansPage() {
       (snapshot) => {
         const loaded: Plan[] = [];
         snapshot.forEach((doc) => {
-          const d = doc.data() as DocumentData;
-          // map the Firestore doc shape to our Plan type
-          loaded.push({
-            id: doc.id,
-            name: d.name,
-            code: d.code,
-            category: d.category,
-            reformerPoints: d.reformerPoints || 0,
-            matPoints: d.matPoints || 0,
-            hotYogaPoints: d.hotYogaPoints || 0,
-            hotPilatesPoints: d.hotPilatesPoints || 0,
-            durationDays: d.durationDays ?? 0,
-            price: d.price ?? 0,
-            description: d.description ?? "",
-            popular: !!d.popular,
-            bestValue: !!d.bestValue,
-            active: !!d.active,
-            createdAt: d.createdAt ?? null,
-          });
+        const d = doc.data() as DocumentData;
+        loaded.push({
+          id: doc.id,
+          name: d.name,
+          code: d.code,
+          category: d.category,
+          reformerPoints: d.reformerPoints || 0,
+          matPoints: d.matPoints || 0,
+          hotYogaPoints: d.hotYogaPoints || 0,
+          hotPilatesPoints: d.hotPilatesPoints || 0,
+          durationDays: d.durationDays ?? 0,
+          price: d.price ?? 0,
+          description: d.description ?? "",
+          popular: !!d.popular,
+          bestValue: !!d.bestValue,
+          active: !!d.active,
+          createdAt: d.createdAt ?? null,
         });
-        // sort by price or createdAt as desired; here we keep server order
+      });
+        loaded.sort((a, b) => a.price - b.price);
         setPlans(loaded);
         setLoading(false);
       },
@@ -612,9 +611,9 @@ export default function PlansPage() {
                   {category === "FITMAX" && <Award className="w-6 h-6 text-primary" />}
                   <h2 className="text-2xl font-bold text-foreground">
                     {category === "REFORMER"
-                      ? "Reformer"
+                      ? "Reformer Pilates"
                       : category === "MAT"
-                      ? "Yoga & Mat"
+                      ? "Hatha Yoga / Mat Pilates"
                       : category === "HOT"
                       ? "Hot Yoga / Hot Pilates"
                       : "Fitmax Combo"}

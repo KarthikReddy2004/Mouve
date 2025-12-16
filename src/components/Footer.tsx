@@ -41,7 +41,7 @@ export default function Footer() {
             transition={{ duration: 0.5 }}
             className="footer-brand-section"
           >
-            <h3 className="footer-brand-title">Mouve</h3><br/>
+            <h3 className="footer-brand-title">MOUVE</h3><br/>
 
             <div className="footer-word-animation-container">
               <AnimatePresence mode="wait">
@@ -168,28 +168,42 @@ export default function Footer() {
         </div>
 
         <motion.div
-          initial={{ opacity: 0, y: 20 }}
-          whileInView={{ opacity: 1, y: 0 }}
-          viewport={{ once: true }}
-          transition={{ duration: 0.5, delay: 0.3 }}
-          className="footer-social-icons"
-        >
-          <a href="https://www.instagram.com" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
-            <InstagramIcon />
-          </a>
-          <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
-            <FacebookIcon />
-          </a>
-          <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
-            <WhatsAppIcon />
-          </a>
-          <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
-            <TwitterIcon />
-          </a>
-          <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
-            <LinkedInIcon />
-          </a>
-        </motion.div>
+  initial={{ opacity: 0, y: 20 }}
+  whileInView={{ opacity: 1, y: 0 }}
+  viewport={{ once: true }}
+  transition={{ duration: 0.5, delay: 0.3 }}
+  className="footer-bottom-row"
+>
+  {/* Address on the left */}
+  <a
+    href="https://www.google.com/maps/search/?api=1&query=2nd+Floor,+MOUVE+Cafe+de+Pilates,+Old+Mumbai+Highway,+Gachibowli+Chowrasta,+Gachibowli,+Hyderabad+500032"
+    target="_blank"
+    rel="noopener noreferrer"
+    className="footer-address-link text-foreground"
+  >
+    2nd Floor, MOUVE Cafe de Pilates, Gachibowli, Hyderabad 500032
+  </a>
+
+  {/* Social icons on the right */}
+  <div className="footer-social-icons">
+    <a href="https://www.instagram.com/mouvepilatesstudio" target="_blank" rel="noopener noreferrer" aria-label="Instagram">
+      <InstagramIcon />
+    </a>
+    <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
+      <FacebookIcon />
+    </a>
+    <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+      <WhatsAppIcon />
+    </a>
+    <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
+      <TwitterIcon />
+    </a>
+    <a href="https://www.linkedin.com" target="_blank" rel="noopener noreferrer" aria-label="LinkedIn">
+      <LinkedInIcon />
+    </a>
+  </div>
+</motion.div>
+
 
         <motion.div
           initial={{ opacity: 0 }}
@@ -198,7 +212,7 @@ export default function Footer() {
           transition={{ duration: 0.6, delay: 0.4 }}
           className="footer-copyright"
         >
-          © {currentYear} Mouve. All rights reserved.
+          © {currentYear} MOUVE. All rights reserved.
         </motion.div>
       </div>
     </footer>

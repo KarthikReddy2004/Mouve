@@ -84,7 +84,7 @@ export default function Onboarding() {
             className="w-28 h-28 rounded-full mx-auto mb-4 border-4 border-gray-700 object-cover"
           />
           <h2 className="text-4xl font-bold bg-clip-text text-transparent bg-gradient-to-r from-blue-400 to-purple-500">
-            Welcome to Mouve!
+            Welcome to MOUVE!
           </h2>
           <p className="text-muted-foreground mt-2">
             Let's complete your profile.

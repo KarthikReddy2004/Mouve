@@ -74,7 +74,7 @@ export default function Navbar() {
         <div className="navbar-container">
           <div className="navbar-left">
             <a href="/" className="navbar-brand">
-              <span className="navbar-brand-text">Mouve</span>
+              <span className="navbar-brand-text">MOUVE</span>
             </a>
           </div>
 

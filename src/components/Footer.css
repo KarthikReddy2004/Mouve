@@ -130,3 +130,21 @@
   font-size: 0.75rem;
   color: var(--muted-foreground);
 }
+
+.footer-bottom-row {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  flex-wrap: wrap; /* ensures it wraps nicely on small screens */
+  margin-top: 1.5rem;
+}
+
+.footer-address-link {
+  font-size: 0.95rem;
+  text-decoration: none;
+  transition: color 0.3s ease, text-decoration 0.3s ease;
+}
+
+.footer-address-link:hover {
+  text-decoration: underline;
+}

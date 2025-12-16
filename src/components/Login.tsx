@@ -221,7 +221,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                     </h2>
                     <p className="login-modal-subtitle">
                       {isSignup
-                        ? "Join Mouve Pilates today"
+                        ? "Join MOUVE Pilates today"
                         : "Sign in to book your class"}
                     </p>
                   </div>
