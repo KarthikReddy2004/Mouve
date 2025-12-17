@@ -4,6 +4,7 @@ import * as React from "react";
 import { Slot } from "@radix-ui/react-slot";
 import { cva, type VariantProps } from "class-variance-authority";
 import { motion } from "framer-motion";
+import { WhatsAppIcon } from '../components/SocialIcons';
 import {
   ChevronRight,
   Sparkles,
@@ -22,7 +23,7 @@ import {
   Timestamp,
   type DocumentData,
 } from "firebase/firestore";
-import { db } from "../../firebase";
+import { auth, db } from "../../firebase";
 
 function cn(...inputs: (string | undefined | null | false)[]) {
   return inputs.filter(Boolean).join(" ");
@@ -57,11 +58,7 @@ const buttonVariants = cva(
   }
 );
 
-interface ButtonProps
-  extends React.ButtonHTMLAttributes<HTMLButtonElement>,
-    VariantProps<typeof buttonVariants> {
-  asChild?: boolean;
-}
+interface ButtonProps extends React.ButtonHTMLAttributes<HTMLButtonElement>, VariantProps<typeof buttonVariants> { asChild?: boolean; }
 
 const Button = React.forwardRef<HTMLButtonElement, ButtonProps>(
   ({ className, variant, size, asChild = false, ...props }, ref) => {
@@ -138,7 +135,6 @@ function Badge({ className, variant, ...props }: BadgeProps) {
   return <div className={cn(badgeVariants({ variant }), className)} {...props} />;
 }
 
-/* ---- Types matching the Firestore structure you specified ---- */
 type CategoryType = "REFORMER" | "MAT" | "HOT" | "FITMAX COMBO" | "NUTRITION" | "FITMAX";
 
 interface Plan {
@@ -150,7 +146,6 @@ interface Plan {
   matPoints: number;
   hotPoints: number;
   nutritionPoints: number;
-
   durationDays: number;
   price: number;
   description: string;
@@ -159,280 +154,154 @@ interface Plan {
   active: boolean;
   createdAt?: Timestamp | null;
 }
-/* -------------------------------------------------------------- */
 
-/* ---------- Modal for summary & payment flow ---------- */
-function SummaryModal({
+function ManualPaymentModal({
   open,
   plan,
   onClose,
-  userId,
-  onSuccess,
 }: {
   open: boolean;
   plan: Plan | null;
-  userId: string | null;
   onClose: () => void;
-  onSuccess: (paymentId: string) => void;
 }) {
-  const [creating, setCreating] = React.useState(false);
-  const popupRef = React.useRef<Window | null>(null);
-  const pollRef = React.useRef<number | null>(null);
-  const timeoutRef = React.useRef<number | null>(null);
-  const [status, setStatus] = React.useState<"idle" | "pending" | "success" | "cancelled">("idle");
-
-  React.useEffect(() => {
-    if (!open) {
-      cleanup();
-    }
-    return cleanup;
-  }, [open]);
-
-  function cleanup() {
-    if (pollRef.current) {
-      window.clearInterval(pollRef.current);
-      pollRef.current = null;
-    }
-    if (timeoutRef.current) {
-      window.clearTimeout(timeoutRef.current);
-      timeoutRef.current = null;
-    }
-    if (popupRef.current && !popupRef.current.closed) {
-      popupRef.current.close();
-      popupRef.current = null;
-    }
-    setCreating(false);
-    setStatus("idle");
-  }
-
-  const openCheckoutPopup = (url: string) => {
-    // open a centered popup
-    const w = 600;
-    const h = 800;
-    const left = window.screenX + (window.outerWidth - w) / 2;
-    const top = window.screenY + (window.outerHeight - h) / 2;
-    popupRef.current = window.open(url, "payment_checkout", `width=${w},height=${h},left=${left},top=${top}`);
-  };
-
-  const pollPaymentStatus = (paymentId: string) => {
-    // poll /api/paymentStatus?paymentId=...
-    pollRef.current = window.setInterval(async () => {
-      try {
-        const res = await fetch(`/api/paymentStatus?paymentId=${paymentId}`);
-        if (!res.ok) return;
-        const data = await res.json();
-        // Expected: { status: 'PENDING'|'SUCCESS'|'FAILED' }
-        if (data?.status === "SUCCESS") {
-          setStatus("success");
-          cleanup();
-          onSuccess(paymentId);
-        } else if (data?.status === "FAILED") {
-          setStatus("cancelled");
-          cleanup();
-        }
-      } catch (err) {
-        // ignore; continue polling
-        console.error("poll error", err);
-      }
-    }, 3000);
-  };
-
-  const waitForPopupClose = (paymentId: string) => {
-    // If user closes popup prematurely, show cancel confirmation
-    timeoutRef.current = window.setTimeout(() => {
-      console.log("Payment timed out for paymentId:", paymentId);
-      // After 5 minutes, stop polling and mark as cancelled
-      if (pollRef.current) {
-        window.clearInterval(pollRef.current);
-        pollRef.current = null;
-      }
-      setStatus("cancelled");
-      setCreating(false);
-      if (popupRef.current && !popupRef.current.closed) {
-        popupRef.current.close();
-        popupRef.current = null;
-      }
-    }, 5 * 60 * 1000); // 5 minutes
-  };
-
-  const handleProceedToPayment = async () => {
-    if (!plan) return;
-    setCreating(true);
-    setStatus("pending");
-
-    try {
-      // Call your cloud function to create payment & PhonePe order
-      // This endpoint must return { paymentId, checkoutUrl }
-      // For now it's a dummy endpoint that you will implement on the server
-      const res = await fetch("/api/createPayment", {
-        method: "POST",
-        headers: { "Content-Type": "application/json" },
-        body: JSON.stringify({
-          planId: plan.code || plan.id,
-          price: plan.price,
-          userId,
-        }),
-      });
-
-      if (!res.ok) {
-        throw new Error("Failed to create payment");
-      }
-      const data = await res.json();
-      const pid = data?.paymentId;
-      const url = data?.checkoutUrl;
-
-      if (!pid || !url) {
-        throw new Error("Invalid response from createPayment");
-      }
-
-      // open popup to payment provider
-      openCheckoutPopup(url);
-
-      // start polling payment status
-      pollPaymentStatus(pid);
-      // watch for popup close or success
-      const popupInterval = window.setInterval(() => {
-        if (!popupRef.current) {
-          window.clearInterval(popupInterval);
-          // popup not created (shouldn't happen)
-          return;
-        }
-        if (popupRef.current.closed) {
-          // popup closed before success -> we keep polling for a small window (30s), then show cancelled
-          window.clearInterval(popupInterval);
-          // let the polling continue for another 30 seconds to allow async callback to mark success
-          setTimeout(async () => {
-            try {
-              const r = await fetch(`/api/paymentStatus?paymentId=${pid}`);
-              const d = await r.json();
-              if (d?.status === "SUCCESS") {
-                setStatus("success");
-                cleanup();
-                onSuccess(pid);
-                return;
-              } else {
-                setStatus("cancelled");
-                cleanup();
-              }
-            } catch {
-              setStatus("cancelled");
-              cleanup();
-            }
-          }, 30000);
-        }
-      }, 1000);
-
-      // overall session timeout (5 minutes)
-      waitForPopupClose(pid);
-    } catch (err) {
-      console.error(err);
-      setStatus("cancelled");
-      setCreating(false);
-    }
-  };
-
   if (!open || !plan) return null;
+  const totalPoints =
+    plan.reformerPoints +
+    plan.matPoints +
+    plan.hotPoints +
+    plan.nutritionPoints;
+  const message = `
+Hi,
+This is *${auth.currentUser?.displayName || "User"}.*
+This is my Email : *${auth.currentUser?.email || "??"}*
+I would like to purchase the following plan:
 
-  // compute cost per point if relevant:
-  const totalPoints = plan.reformerPoints + plan.matPoints + plan.hotPoints + plan.nutritionPoints;
-  const costPerPoint = totalPoints > 0 ? plan.price / totalPoints : null;
+Plan Name -
+*${plan.name}*
 
+Plan Code -
+*${plan.code}*
+`;
+  const whatsappUrl = `https://wa.me/8074078804?text=${encodeURIComponent(message)}`;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
-      <div className="absolute inset-0 bg-black/40" onClick={onClose} />
+      <div
+        className="absolute inset-0 bg-black/40"
+        onClick={onClose}
+      />
       <motion.div
         initial={{ scale: 0.98, opacity: 0 }}
         animate={{ scale: 1, opacity: 1 }}
         className="relative z-10 w-full max-w-lg rounded-lg bg-background p-6"
       >
         <h3 className="text-xl font-bold mb-2">{plan.name}</h3>
-        <p className="text-sm text-muted-foreground mb-4">{plan.description}</p>
+        <p className="text-sm text-muted-foreground mb-4">
+          {plan.description}
+        </p>
 
-        <div className="grid grid-cols-2 gap-2 mb-4">
+        {/* Plan summary */}
+        <div className="grid grid-cols-2 gap-3 mb-4">
           <div className="rounded-md border p-3">
             <div className="text-xs text-muted-foreground">Price</div>
-            <div className="text-lg font-semibold">₹{plan.price.toLocaleString()}</div>
+            <div className="text-lg font-semibold">
+              ₹{plan.price.toLocaleString()}
+            </div>
           </div>
+
           <div className="rounded-md border p-3">
             <div className="text-xs text-muted-foreground">Validity</div>
             <div className="text-lg font-semibold">
-              {plan.durationDays <= 1 ? "Single use" : `${plan.durationDays} days`}
+              {plan.durationDays <= 1
+                ? "Single use"
+                : `${plan.durationDays} days`}
             </div>
           </div>
-          <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Reformer</div>
-            <div className="text-lg font-semibold">{plan.reformerPoints}</div>
-          </div>
-          <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Mat</div>
-            <div className="text-lg font-semibold">{plan.matPoints}</div>
-          </div>
-          <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Hot</div>
-            <div className="text-lg font-semibold">{plan.hotPoints}</div>
-          </div>
-          <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Nutrition</div>
-            <div className="text-lg font-semibold">{plan.nutritionPoints}</div>
-          </div>
-          {costPerPoint !== null && (
-            <div className="rounded-md border p-3 col-span-2">
-              <div className="text-xs text-muted-foreground">Approx. cost per point</div>
-              <div className="text-lg font-semibold">₹{Math.round(costPerPoint)}</div>
+
+          <div className="rounded-md border p-3 col-span-2">
+            <div className="text-xs text-muted-foreground">
+              Total Points
             </div>
-          )}
+            <div className="text-lg font-semibold">
+              {totalPoints}
+            </div>
+          </div>
         </div>
 
-        <div className="flex gap-3 justify-end">
-          <Button variant="outline" onClick={onClose} disabled={creating}>
+        {/* Important message */}
+        <div className="rounded-md border border-yellow-400 bg-yellow-50 p-4 mb-4">
+          <p className="text-sm text-yellow-900 font-medium">
+            🚧 Payment Gateway Not Integrated
+          </p>
+          <p className="text-sm text-yellow-800 mt-1">
+            Online payments are currently unavailable.
+            <br />
+            Please click the WhatsApp button below or visit the studio to complete your payment.
+            <br />
+            Your points will be credited to your account once the payment is confirmed.
+          </p>
+        </div>
+        <div className="flex justify-center mb-4">
+          <a
+            href={whatsappUrl}
+            target="_blank"
+            rel="noopener noreferrer"
+            aria-label="WhatsApp"
+            className="inline-flex items-center justify-center w-8 h-8 rounded-full transition-colors"
+          >
+            <WhatsAppIcon />
+          </a>
+        </div>
+        <div className="flex justify-end">
+          <Button onClick={onClose}>
             Close
           </Button>
-          <Button onClick={handleProceedToPayment} disabled={creating}>
-            {creating ? "Processing..." : "Proceed to Payment"}
-            <ChevronRight className="w-4 h-4 ml-2" />
-          </Button>
         </div>
-
-        {status === "pending" && <p className="mt-3 text-sm text-muted-foreground">Awaiting payment...</p>}
-        {status === "success" && <p className="mt-3 text-sm text-green-600">Payment successful!</p>}
-        {status === "cancelled" && <p className="mt-3 text-sm text-red-600">Payment was cancelled or timed out.</p>}
       </motion.div>
     </div>
   );
 }
 
-/* ---------- PlanCard component ---------- */
 function PlanCard({ plan, onBuy }: { plan: Plan; onBuy: (plan: Plan) => void }) {
   const totalPoints = plan.reformerPoints + plan.matPoints + plan.hotPoints + plan.nutritionPoints;
   const costPerPoint = totalPoints > 0 ? plan.price / totalPoints : null;
+  const isPopular = plan.popular;
+  const isBestValue = plan.bestValue;
+  const isHighlighted = isPopular || isBestValue;
+  const isBoth = isPopular && isBestValue;
+
 
   return (
     <motion.div initial={{ opacity: 0, y: 10 }} animate={{ opacity: 1, y: 0 }} whileHover={{ y: -4 }}>
       <Card
         className={cn(
-          "relative h-full transition-all duration-300 overflow-hidden",
-          plan.popular && "border-primary shadow-lg shadow-primary/20",
-          plan.bestValue && "border-green-500 shadow-lg shadow-green-500/20"
+          "relative h-full transition-all duration-300 overflow-hidden border",
+          isHighlighted && "border-green-500 shadow-lg shadow-green-500/20",
+          isBoth && "border-2 shadow-xl"
         )}
       >
         {(plan.popular || plan.bestValue) && (
           <div className="absolute top-0 right-0 z-10">
             <Badge
               className={cn(
-                "rounded-bl-lg rounded-tr-lg rounded-tl-none rounded-br-none",
-                plan.popular && "bg-primary",
-                plan.bestValue && "bg-green-500"
+                "rounded-bl-lg rounded-tr-lg rounded-tl-none rounded-br-none px-3 py-1 flex items-center gap-1 text-xs font-semibold",
+                plan.popular && plan.bestValue && "bg-green-600",
+                plan.popular && !plan.bestValue && "bg-green-500",
+                plan.bestValue && !plan.popular && "bg-green-500"
               )}
             >
-              {plan.popular && (
+              {plan.popular && plan.bestValue ? (
                 <>
-                  <Sparkles className="w-3 h-3 mr-1" />
+                  <Sparkles className="w-3 h-3" />
+                  Popular & Best Value
+                </>
+              ) : plan.popular ? (
+                <>
+                  <Sparkles className="w-3 h-3" />
                   Popular
                 </>
-              )}
-              {plan.bestValue && (
+              ) : (
                 <>
-                  <TrendingUp className="w-3 h-3 mr-1" />
+                  <TrendingUp className="w-3 h-3" />
                   Best Value
                 </>
               )}
@@ -501,21 +370,14 @@ function PlanCard({ plan, onBuy }: { plan: Plan; onBuy: (plan: Plan) => void }) 
   );
 }
 
-/* ---------- The main page ---------- */
 export default function PlansPage() {
   const [plans, setPlans] = React.useState<Plan[]>([]);
   const [selectedCategory, setSelectedCategory] = React.useState<"ALL" | CategoryType | "FITMAX">("ALL");
   const [loading, setLoading] = React.useState(true);
   const [selectedPlan, setSelectedPlan] = React.useState<Plan | null>(null);
   const [modalOpen, setModalOpen] = React.useState(false);
-
-  // Replace with real logged-in user id from auth
-  const userId = "demo-user-id";
-
   const categories: (CategoryType | "ALL" | "FITMAX")[] = ["ALL", "REFORMER", "MAT", "HOT", "FITMAX", "NUTRITION"];
-
   React.useEffect(() => {
-    // subscribe to plans where active == true
     const q = query(collection(db, "plans"), where("active", "==", true));
     setLoading(true);
     const unsub = onSnapshot(
@@ -551,10 +413,8 @@ export default function PlansPage() {
         setLoading(false);
       }
     );
-
     return () => unsub();
   }, []);
-
   const grouped = React.useMemo(() => {
     const filtered = selectedCategory === "ALL" ? plans : plans.filter((p) => p.category === selectedCategory || (selectedCategory === "FITMAX" && p.category === "FITMAX COMBO"));
     const group: Record<string, Plan[]> = {};
@@ -565,37 +425,23 @@ export default function PlansPage() {
     }
     return group;
   }, [plans, selectedCategory]);
-
   const onBuy = (plan: Plan) => {
     setSelectedPlan(plan);
     setModalOpen(true);
   };
-
   const handleModalClose = () => {
     setModalOpen(false);
     setSelectedPlan(null);
   };
-
-  const handlePaymentSuccess = (paymentId: string) => {
-    // on success, you may navigate to dashboard or show success toast
-    // For now, we'll close modal and log
-    console.log("Payment success", paymentId);
-    setModalOpen(false);
-    setSelectedPlan(null);
-    // Frontend should also listen to user's points document to reflect updates (as per spec)
-    // e.g., points/{userId} will be incremented by cloud function on successful payment
-  };
-
   return (
     <div className="min-h-screen bg-background text-foreground">
       <div className="container mx-auto px-4 py-12">
         <motion.div initial={{ opacity: 0, y: -20 }} animate={{ opacity: 1, y: 0 }} className="text-center mb-8">
           <h1 className="text-4xl md:text-5xl font-bold mb-2 text-foreground">Plans & Points</h1>
           <p className="text-lg text-muted-foreground max-w-2xl mx-auto">
-            Choose a package and get Reformer, Mat, or Hot Yoga points to book classes.
+            Choose a package and unlock access to sessions using points.
           </p>
         </motion.div>
-
         <div className="flex flex-wrap justify-center gap-2 mb-8">
           {categories.map((c) => {
             const isActive = selectedCategory === c;
@@ -618,9 +464,7 @@ export default function PlansPage() {
             );
           })}
         </div>
-
         {loading && <p className="text-center text-sm text-muted-foreground">Loading plans…</p>}
-
         <div className="space-y-12">
           {Object.entries(grouped).length === 0 && !loading && <p className="text-center text-muted-foreground">No plans available.</p>}
           {Object.entries(grouped).map(([category, categoryPlans]) => (
@@ -645,7 +489,6 @@ export default function PlansPage() {
                   </h2>
                 </div>
               </div>
-
               <div className="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
                 {categoryPlans.map((plan) => (
                   <PlanCard key={plan.id} plan={plan} onBuy={onBuy} />
@@ -656,7 +499,11 @@ export default function PlansPage() {
         </div>
       </div>
 
-      <SummaryModal open={modalOpen} plan={selectedPlan} onClose={handleModalClose} userId={userId} onSuccess={handlePaymentSuccess} />
+      <ManualPaymentModal
+        open={modalOpen}
+        plan={selectedPlan}
+        onClose={handleModalClose}
+      />
     </div>
   );
 }
