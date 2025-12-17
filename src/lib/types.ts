@@ -11,6 +11,7 @@ export interface Plan {
   matPoints: number;
   hotYogaPoints: number;
   hotPilatesPoints: number;
+  nutritionPoints: number;
   durationDays: number;
   price: number;
   description: string;

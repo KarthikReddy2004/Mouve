@@ -139,7 +139,7 @@ function Badge({ className, variant, ...props }: BadgeProps) {
 }
 
 /* ---- Types matching the Firestore structure you specified ---- */
-type CategoryType = "REFORMER" | "MAT" | "HOT" | "FITMAX";
+type CategoryType = "REFORMER" | "MAT" | "HOT" | "FITMAX COMBO" | "NUTRITION" | "FITMAX";
 
 interface Plan {
   id: string;
@@ -148,9 +148,10 @@ interface Plan {
   category: CategoryType;
   reformerPoints: number;
   matPoints: number;
-  hotYogaPoints: number;
-  hotPilatesPoints: number;
-  durationDays: number; // 0 or 1 for single sessions; else 30/45/90/180
+  hotPoints: number;
+  nutritionPoints: number;
+
+  durationDays: number;
   price: number;
   description: string;
   popular?: boolean;
@@ -333,7 +334,7 @@ function SummaryModal({
   if (!open || !plan) return null;
 
   // compute cost per point if relevant:
-  const totalPoints = plan.reformerPoints + plan.matPoints + plan.hotYogaPoints + plan.hotPilatesPoints;
+  const totalPoints = plan.reformerPoints + plan.matPoints + plan.hotPoints + plan.nutritionPoints;
   const costPerPoint = totalPoints > 0 ? plan.price / totalPoints : null;
 
   return (
@@ -367,8 +368,12 @@ function SummaryModal({
             <div className="text-lg font-semibold">{plan.matPoints}</div>
           </div>
           <div className="rounded-md border p-3">
-            <div className="text-xs text-muted-foreground">Hot Yoga</div>
-            <div className="text-lg font-semibold">{plan.hotYogaPoints + plan.hotPilatesPoints}</div>
+            <div className="text-xs text-muted-foreground">Hot</div>
+            <div className="text-lg font-semibold">{plan.hotPoints}</div>
+          </div>
+          <div className="rounded-md border p-3">
+            <div className="text-xs text-muted-foreground">Nutrition</div>
+            <div className="text-lg font-semibold">{plan.nutritionPoints}</div>
           </div>
           {costPerPoint !== null && (
             <div className="rounded-md border p-3 col-span-2">
@@ -398,7 +403,7 @@ function SummaryModal({
 
 /* ---------- PlanCard component ---------- */
 function PlanCard({ plan, onBuy }: { plan: Plan; onBuy: (plan: Plan) => void }) {
-  const totalPoints = plan.reformerPoints + plan.matPoints + plan.hotYogaPoints + plan.hotPilatesPoints;
+  const totalPoints = plan.reformerPoints + plan.matPoints + plan.hotPoints + plan.nutritionPoints;
   const costPerPoint = totalPoints > 0 ? plan.price / totalPoints : null;
 
   return (
@@ -461,10 +466,16 @@ function PlanCard({ plan, onBuy }: { plan: Plan; onBuy: (plan: Plan) => void }) 
                 {plan.matPoints} Mat
               </Badge>
             )}
-            {(plan.hotYogaPoints + plan.hotPilatesPoints) > 0 && (
+            {(plan.hotPoints) > 0 && (
               <Badge variant="outline" className="text-xs">
                 <Zap className="w-3 h-3 mr-1" />
-                {plan.hotYogaPoints + plan.hotPilatesPoints} Hot
+                {plan.hotPoints} Hot
+              </Badge>
+            )}
+            {plan.nutritionPoints > 0 && (
+              <Badge variant="outline" className="text-xs">
+                <Award className="w-3 h-3 mr-1" />
+                {plan.nutritionPoints} Nutrition
               </Badge>
             )}
             <Badge variant="outline" className="text-xs">
@@ -501,7 +512,7 @@ export default function PlansPage() {
   // Replace with real logged-in user id from auth
   const userId = "demo-user-id";
 
-  const categories: (CategoryType | "ALL" | "FITMAX")[] = ["ALL", "REFORMER", "MAT", "HOT", "FITMAX"];
+  const categories: (CategoryType | "ALL" | "FITMAX")[] = ["ALL", "REFORMER", "MAT", "HOT", "FITMAX", "NUTRITION"];
 
   React.useEffect(() => {
     // subscribe to plans where active == true
@@ -520,8 +531,8 @@ export default function PlansPage() {
           category: d.category,
           reformerPoints: d.reformerPoints || 0,
           matPoints: d.matPoints || 0,
-          hotYogaPoints: d.hotYogaPoints || 0,
-          hotPilatesPoints: d.hotPilatesPoints || 0,
+          hotPoints: d.hotPoints || 0,
+          nutritionPoints: d.nutritionPoints || 0,
           durationDays: d.durationDays ?? 0,
           price: d.price ?? 0,
           description: d.description ?? "",
@@ -545,7 +556,7 @@ export default function PlansPage() {
   }, []);
 
   const grouped = React.useMemo(() => {
-    const filtered = selectedCategory === "ALL" ? plans : plans.filter((p) => p.category === selectedCategory || (selectedCategory === "FITMAX" && p.category === "FITMAX"));
+    const filtered = selectedCategory === "ALL" ? plans : plans.filter((p) => p.category === selectedCategory || (selectedCategory === "FITMAX" && p.category === "FITMAX COMBO"));
     const group: Record<string, Plan[]> = {};
     for (const p of filtered) {
       const key = p.category;
@@ -588,7 +599,18 @@ export default function PlansPage() {
         <div className="flex flex-wrap justify-center gap-2 mb-8">
           {categories.map((c) => {
             const isActive = selectedCategory === c;
-            const label = c === "ALL" ? "All" : c === "REFORMER" ? "Reformer" : c === "MAT" ? "Yoga & Mat" : c === "HOT" ? "Hot Yoga / Hot Pilates" : "Fitmax Combo";
+            const label =
+              c === "ALL"
+                ? "All"
+                : c === "REFORMER"
+                ? "Reformer"
+                : c === "MAT"
+                ? "Yoga & Mat"
+                : c === "HOT"
+                ? "Hot Yoga / Hot Pilates"
+                : c === "NUTRITION"
+                ? "Nutritional Consultation"
+                : "Fitmax Combo";
             return (
               <Button key={c} variant={isActive ? "default" : "outline"} onClick={() => setSelectedCategory(c)} className="transition-all">
                 {label}
@@ -609,6 +631,7 @@ export default function PlansPage() {
                   {category === "MAT" && <Users className="w-6 h-6 text-primary" />}
                   {category === "HOT" && <Zap className="w-6 h-6 text-primary" />}
                   {category === "FITMAX" && <Award className="w-6 h-6 text-primary" />}
+                  {category === "NUTRITION" && <Award className="w-6 h-6 text-primary" />}
                   <h2 className="text-2xl font-bold text-foreground">
                     {category === "REFORMER"
                       ? "Reformer Pilates"
@@ -616,6 +639,8 @@ export default function PlansPage() {
                       ? "Hatha Yoga / Mat Pilates"
                       : category === "HOT"
                       ? "Hot Yoga / Hot Pilates"
+                      : category === "NUTRITION"
+                      ? "Nutritional Consultation" 
                       : "Fitmax Combo"}
                   </h2>
                 </div>
