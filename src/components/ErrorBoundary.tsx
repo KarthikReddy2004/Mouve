@@ -1,5 +1,5 @@
 import { Component } from "react";
-import type { ReactNode } from "react";
+import type { ReactNode, ErrorInfo } from "react";
 
 interface Props {
   children: ReactNode;
@@ -19,7 +19,7 @@ export default class ErrorBoundary extends Component<Props, State> {
     return { hasError: true, error };
   }
 
-  componentDidCatch(error: Error, info: any) {
+  componentDidCatch(error: Error, info: ErrorInfo) {
     console.error("App error:", error, info);
   }
 

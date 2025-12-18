@@ -29,21 +29,21 @@ const classes = Object.freeze([
 const instructors = Object.freeze([
   {
     name: "Hemanth",
-    role: "Fitness coach • Bodybuilder • Nutritionist",
-    desc: "Pilates Certifies • 10+ years experience",
+    role: "Lifestyle coach • contest prep coach • bodybuilder • powerlifter • sports nutritionist • pilates instructor",
+    desc: "Reformer Certified • 10+ years experience",
     img: "/Hemanth.jpeg",
   },
   {
     name: "Yashoda Gangadhar",
-    role: "Yoga and Pilates coach • Clinical Nutritionist",
+    role: "Yoga trainer • Pilates coach • Clinical Nutritionist",
     desc: "Reformer Certified • 5+ years experience",
     img: "/Yashoda.jpeg",
   },
   {
     name: "Sunil",
-    role: "Fitness Enthusiast",
-    desc: "Reformer Certified",
-    img: "",
+    role: "Fitness coach • pilates instructor",
+    desc: "Reformer Certified • 5+ years experience",
+    img: "/Sunil.jpeg",
   },
 ]);
 
@@ -138,7 +138,7 @@ export default function LandingPage() {
               onClick={() => setLoginOpen(true)}
               aria-label="Book your first class at MOUVE"
             >
-              Claim Your Free Class
+              Book Your First Class
             </Button>
             <Button
               asChild
@@ -194,38 +194,62 @@ export default function LandingPage() {
       </section>
 
       {/* INSTRUCTORS */}
-      <section className="py-20 bg-muted px-4 sm:px-6">
-        <h2 className="text-3xl sm:text-4xl md:text-5xl text-foreground font-light text-center mb-12">Meet Our Founders</h2>
-        <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3">
-          {instructors.map((inst, i) => {
-            const imageSrc = inst.img?.trim() || "/placeholder-avatar.jpg";
-            return (
-              <motion.div
-                key={inst.name}
-                variants={fadeUp}
-                initial="hidden"
-                whileInView="show"
-                viewport={{ once: true }}
-                transition={{ delay: i * 0.1 }}
-                className="text-center"
-              >
-                <div className="mx-auto w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden shadow-2xl mb-4">
-                  <img
-                    src={imageSrc}
-                    alt={`${inst.name}, ${inst.role}`}
-                    className="w-full h-full object-cover"
-                    loading="lazy"
-                    decoding="async"
-                  />
-                </div>
-                <h3 className="text-lg sm:text-xl text-foreground font-medium">{inst.name}</h3>
-                <p className="text-sm text-muted-foreground mt-1">{inst.role}</p>
-                <p className="text-xs text-muted-foreground mt-1">{inst.desc}</p>
-              </motion.div>
-            );
-          })}
-        </div>
-      </section>
+      <section className="py-16 sm:py-20 bg-muted px-4 sm:px-6">
+  <h2 className="text-3xl sm:text-4xl md:text-5xl text-foreground font-light text-center mb-12">
+    Meet Our Founders
+  </h2>
+
+  <div className="max-w-7xl mx-auto grid gap-6 sm:grid-cols-2 md:grid-cols-3">
+    {instructors.map((inst, i) => {
+      const imageSrc = inst.img?.trim() || "/placeholder-avatar.jpg";
+
+      return (
+        <motion.figure
+          key={inst.name}
+          variants={fadeUp}
+          initial="hidden"
+          whileInView="show"
+          whileHover={{ y: -6 }}
+          viewport={{ once: true }}
+          transition={{ delay: i * 0.1, type: "spring", stiffness: 300 }}
+          className="text-center"
+        >
+          {/* Image */}
+          <div className="mx-auto w-40 h-40 sm:w-48 sm:h-48 rounded-3xl overflow-hidden shadow-2xl mb-4">
+            <img
+              src={imageSrc}
+              alt={`${inst.name}, ${inst.role}`}
+              width={192}
+              height={192}
+              loading="lazy"
+              decoding="async"
+              className="w-full h-full object-cover transition-transform duration-500 hover:scale-105"
+            />
+          </div>
+
+          {/* Text */}
+          <figcaption>
+            <h3 className="text-lg sm:text-xl text-foreground font-semibold tracking-wide">
+              {inst.name}
+            </h3>
+
+            <p
+              className="text-sm text-muted-foreground mt-1 max-w-xs mx-auto"
+              aria-label="Instructor role"
+            >
+              {inst.role}
+            </p>
+
+            <p className="text-xs text-muted-foreground mt-1">
+              {inst.desc}
+            </p>
+          </figcaption>
+        </motion.figure>
+      );
+    })}
+  </div>
+</section>
+
 
       {/* TESTIMONIALS */}
       <section className="py-20 bg-foreground text-background px-4 sm:px-6">

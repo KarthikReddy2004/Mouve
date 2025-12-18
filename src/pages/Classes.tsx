@@ -282,8 +282,6 @@ const Classes: React.FC = () => {
             Real-time availability • Instant booking • No waiting
           </p>
         </div>
-
-        {/* If DateStrip expects a Date, keep it like this */}
         <DateStrip
           selectedDate={selectedDate.toISOString().split("T")[0]}
           onDateSelect={(dateString) => setSelectedDate(new Date(dateString))}
