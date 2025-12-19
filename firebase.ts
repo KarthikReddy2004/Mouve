@@ -62,6 +62,6 @@ export const db: Firestore = (() => {
   }
 })();
 
-export const functions: Functions = getFunctions(app);
+export const functions: Functions = getFunctions(app, "us-central1");
 
 export default app;
