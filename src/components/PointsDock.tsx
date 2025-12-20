@@ -44,6 +44,8 @@ const PointsDock = () => {
     points.hotPoints +
     points.nutritionPoints;
 
+  if (total === 0) return null;
+
   return (
     <div ref={ref} className="fixed top-[72px] right-4 z-40">
       <div
