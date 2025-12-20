@@ -15,6 +15,7 @@ import {
 import { FirebaseError } from "firebase/app";
 import { auth } from "../../firebase";
 import { useAuth } from "@/hooks/useAuth";
+import { signInWithRedirect } from "firebase/auth";
 import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
@@ -46,18 +47,37 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setShowPasswordHint(false);
   };
 
+  const isIosSafari = () => {
+    if (typeof window === "undefined") return false;
+    const ua = window.navigator.userAgent;
+    return (
+      /iP(ad|hone|od)/.test(ua) &&
+      /Safari/.test(ua) &&
+      !/CriOS|FxiOS|OPiOS|EdgiOS/.test(ua)
+    );
+  };
+
+  const storageAvailable = () => {
+    try {
+      const test = "__test__";
+      localStorage.setItem(test, test);
+      localStorage.removeItem(test);
+      return true;
+    } catch {
+      return false;
+    }
+  };
+
   useEffect(() => {
     if (user && isOpen) {
-      // Check if user is newly registered (e.g., no displayName yet) and needs onboarding
-      // In a real app, this would be a more robust check from your backend
       if (!user.displayName) {
         navigate("/onboarding");
       } else {
-        navigate("/dashboard"); // Or the last intended protected route
+        navigate("/dashboard");
       }
-      onClose(); // Close the modal
+      onClose();
     }
-  }, [user, isOpen, onClose, navigate]); // Add navigate to dependency array
+  }, [user, isOpen, onClose, navigate]);
 
   const validatePassword = (pwd: string): string | null => {
     if (pwd.length < 7) return "Password must be more than 6 characters.";
@@ -131,14 +151,27 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   };
 
   const handleGoogleSignIn = async () => {
+    if (!storageAvailable()) {
+      setError(
+        "Login is not supported in Private Browsing on Safari. Please disable it or use another browser."
+      );
+      return;
+    }
+
     if (user || loading) return;
 
     setError("");
     setLoading(true);
+
     const provider = new GoogleAuthProvider();
 
     try {
-      await signInWithPopup(auth, provider);
+      if (isIosSafari()) {
+        await signInWithRedirect(auth, provider);
+      } else {
+        await signInWithPopup(auth, provider);
+      }
+
       setAuthLoading(true);
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
@@ -158,8 +191,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
           default:
             setError("Google sign-in failed. Please try again.");
         }
-      } else if (err instanceof Error) {
-        setError(err.message);
       } else {
         setError("An unexpected error occurred during Google sign-in.");
       }

@@ -1,6 +1,6 @@
 //import type { getAnalytics } from "firebase/analytics";
 import { initializeApp, getApps, getApp, FirebaseError, type FirebaseApp } from "firebase/app";
-import { getAuth } from "firebase/auth";
+import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
 import { getFirestore, type Firestore } from "firebase/firestore";
 //import { getAnalytics, isSupported } from 'firebase/analytics';
 import { getFunctions, type Functions } from "firebase/functions";
@@ -46,7 +46,13 @@ try {
 
 export const auth = (() => {
   try {
-    return getAuth(app);
+    const authInstance = getAuth(app);
+
+    setPersistence(authInstance, browserLocalPersistence).catch((err) => {
+      console.error("Auth persistence error:", err);
+    });
+
+    return authInstance;
   } catch (err) {
     console.error("Failed to initialize Auth:", err);
     throw err;

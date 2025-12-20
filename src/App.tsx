@@ -11,7 +11,8 @@ import ErrorBoundary from "./components/ErrorBoundary.tsx";
 import ProtectedRoute from "./components/ProtectedRoute.tsx";
 import { useAuth } from "./hooks/useAuth.ts";
 import { PointsProvider } from "./context/PointsProvider";
-
+import { getRedirectResult } from "firebase/auth";
+import { auth } from "../firebase";
 
 const HeroSection = lazy(() => import("./pages/HeroSection.tsx"));
 const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
@@ -26,6 +27,12 @@ function App() {
   const [isOpen, setIsOpen] = useState(true);
   const [allowedUsers, setAllowedUsers] = useState<string[]>([]);
   const [maintenanceLoading, setMaintenanceLoading] = useState(true);
+
+  useEffect(() => {
+    getRedirectResult(auth).catch((err) => {
+      console.error("Redirect result error:", err);
+    });
+  }, []);
 
   useEffect(() => {
     const fetchMaintenanceStatus = async () => {
