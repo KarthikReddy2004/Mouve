@@ -105,7 +105,7 @@ export default function Dashboard() {
           transition={{ duration: 0.4 }}
           className="mb-12"
         >
-          <h1 className="text-4xl font-bold">
+          <h1 className="text-4xl font-bold text-foreground">
             Welcome back, {user?.displayName || "User"}
           </h1>
           <p className="text-muted-foreground mt-2">
@@ -128,7 +128,7 @@ export default function Dashboard() {
             className="text-center py-24 border rounded-2xl"
           >
             <Calendar className="w-14 h-14 mx-auto text-muted-foreground mb-6" />
-            <h2 className="text-2xl font-semibold mb-2">
+            <h2 className="text-foreground text-2xl font-semibold mb-2">
               No bookings yet
             </h2>
             <p className="text-muted-foreground mb-8">

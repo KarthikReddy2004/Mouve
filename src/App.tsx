@@ -1,5 +1,5 @@
 import { Suspense, lazy, useState, useEffect } from "react";
-import { BrowserRouter, Routes, Route } from "react-router-dom";
+import { Routes, Route } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import { useNavigate, useLocation } from "react-router-dom";
@@ -73,32 +73,30 @@ function App() {
   }
 
   return (
-    <BrowserRouter>
-      <PointsProvider>
-        <div className="flex min-h-screen flex-col">
-          <Navbar />
-          <PointsDock />
-          <main className="flex-1">
-            <ErrorBoundary>
-              <Suspense fallback={<Loading />}>
-                <Routes>
-                  <Route path="/" element={<HeroSection />} />
-                  <Route path="/privacy-policy" element={<PrivacyPolicy />} />
-                  <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
-                  <Route element={<ProtectedRoute />}>
-                    <Route path="/dashboard" element={<Dashboard />} />
-                    <Route path="/classes" element={<Classes />} />
-                    <Route path="/plans" element={<Plans />} />
-                    <Route path="/onboarding" element={<Onboarding />} />
-                  </Route>
-                </Routes>
-              </Suspense>
-            </ErrorBoundary>
-          </main>
-          <Footer />
-        </div>
-      </PointsProvider>
-    </BrowserRouter>
+    <PointsProvider>
+      <div className="flex min-h-screen flex-col">
+        <Navbar />
+        <PointsDock />
+        <main className="flex-1">
+          <ErrorBoundary>
+            <Suspense fallback={<Loading />}>
+              <Routes>
+                <Route path="/" element={<HeroSection />} />
+                <Route path="/privacy-policy" element={<PrivacyPolicy />} />
+                <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
+                <Route element={<ProtectedRoute />}>
+                  <Route path="/dashboard" element={<Dashboard />} />
+                  <Route path="/classes" element={<Classes />} />
+                  <Route path="/plans" element={<Plans />} />
+                  <Route path="/onboarding" element={<Onboarding />} />
+                </Route>
+              </Routes>
+            </Suspense>
+          </ErrorBoundary>
+        </main>
+        <Footer />
+      </div>
+    </PointsProvider>
   );
 }
 
