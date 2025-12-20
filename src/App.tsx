@@ -2,37 +2,45 @@ import { Suspense, lazy, useState, useEffect } from "react";
 import { BrowserRouter, Routes, Route } from "react-router-dom";
 import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
-import Maintenance from "./pages/Maintenance.tsx";
+import { useNavigate, useLocation } from "react-router-dom";
+
+import Maintenance from "./pages/Maintenance";
 import Navbar from "./components/Navbar";
-import PointsDock from "./components/PointsDock.tsx";
+import PointsDock from "./components/PointsDock";
 import Footer from "./components/Footer";
 import Loading from "./components/Loading";
-import ErrorBoundary from "./components/ErrorBoundary.tsx";
-import ProtectedRoute from "./components/ProtectedRoute.tsx";
-import { useAuth } from "./hooks/useAuth.ts";
+import ErrorBoundary from "./components/ErrorBoundary";
+import ProtectedRoute from "./components/ProtectedRoute";
+import { useAuth } from "./hooks/useAuth";
 import { PointsProvider } from "./context/PointsProvider";
-import { getRedirectResult } from "firebase/auth";
-import { auth } from "../firebase";
 
-const HeroSection = lazy(() => import("./pages/HeroSection.tsx"));
-const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy.tsx"));
-const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions.tsx"));
-const Classes = lazy(() => import("./pages/Classes.tsx"));
-const Plans = lazy(() => import("./pages/Plans.tsx"));
-const Dashboard = lazy(() => import("./pages/Dashboard.tsx"));
-const Onboarding = lazy(() => import("./pages/Onboarding.tsx"));
+const HeroSection = lazy(() => import("./pages/HeroSection"));
+const PrivacyPolicy = lazy(() => import("./pages/PrivacyPolicy"));
+const TermsAndConditions = lazy(() => import("./pages/TermsAndConditions"));
+const Classes = lazy(() => import("./pages/Classes"));
+const Plans = lazy(() => import("./pages/Plans"));
+const Dashboard = lazy(() => import("./pages/Dashboard"));
+const Onboarding = lazy(() => import("./pages/Onboarding"));
 
 function App() {
   const { user, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
+  const navigate = useNavigate();
+  const location = useLocation();
   const [allowedUsers, setAllowedUsers] = useState<string[]>([]);
   const [maintenanceLoading, setMaintenanceLoading] = useState(true);
 
   useEffect(() => {
-    getRedirectResult(auth).catch((err) => {
-      console.error("Redirect result error:", err);
-    });
-  }, []);
+    if (!loading && user) {
+      if (location.pathname === "/") {
+        if (!user.displayName) {
+          navigate("/onboarding", { replace: true });
+        } else {
+          navigate("/dashboard", { replace: true });
+        }
+      }
+    }
+  }, [user, loading, navigate, location.pathname]);
 
   useEffect(() => {
     const fetchMaintenanceStatus = async () => {
@@ -58,9 +66,7 @@ function App() {
     fetchMaintenanceStatus();
   }, []);
 
-  if (loading || maintenanceLoading) {
-    return <Loading />;
-  }
+  if (loading || maintenanceLoading) return <Loading />;
 
   if (!isOpen && user && !allowedUsers.includes(user.email || "")) {
     return <Maintenance />;

@@ -1,13 +1,26 @@
-//import type { getAnalytics } from "firebase/analytics";
-import { initializeApp, getApps, getApp, FirebaseError, type FirebaseApp } from "firebase/app";
-import { getAuth, setPersistence, browserLocalPersistence } from "firebase/auth";
+import {
+  initializeApp,
+  getApps,
+  getApp,
+  FirebaseError,
+  type FirebaseApp,
+} from "firebase/app";
+
+import {
+  getAuth,
+  setPersistence,
+  browserLocalPersistence,
+  browserSessionPersistence,
+  inMemoryPersistence,
+  type Auth,
+} from "firebase/auth";
+
 import { getFirestore, type Firestore } from "firebase/firestore";
-//import { getAnalytics, isSupported } from 'firebase/analytics';
 import { getFunctions, type Functions } from "firebase/functions";
 
 const firebaseConfig = {
   apiKey: "AIzaSyB0WuKH1MfpZRLkgHHIfKmnkUl2GJFVPjI",
-  authDomain: "mouve-a1b2c3.firebaseapp.com",
+  authDomain: "mouve.in",
   databaseURL: "https://mouve-a1b2c3-default-rtdb.asia-southeast1.firebasedatabase.app",
   projectId: "mouve-a1b2c3",
   storageBucket: "mouve-a1b2c3.firebasestorage.app",
@@ -29,45 +42,46 @@ const firebaseConfig = {
 // }
 // export { analytics };
 
-let analytics : undefined;
-export { analytics };
+export const analytics = undefined;
 
+// App
 let app: FirebaseApp;
 try {
   app = getApps().length ? getApp() : initializeApp(firebaseConfig);
 } catch (err) {
   if (err instanceof FirebaseError) {
-    console.error("initialization failed:", err.code, err.message);
+    console.error("Firebase init failed:", err.code, err.message);
   } else {
-    console.error("Unexpected error:", err);
+    console.error("Unexpected init error:", err);
   }
-  throw new Error("Failed to initialize.");
+  throw new Error("Failed to initialize Firebase.");
 }
 
-export const auth = (() => {
-  try {
-    const authInstance = getAuth(app);
+// Auth (with persistence fallback for storage-restricted browsers like iOS Safari) [web:21][web:85]
+export const auth: Auth = (() => {
+  const authInstance = getAuth(app);
 
-    setPersistence(authInstance, browserLocalPersistence).catch((err) => {
-      console.error("Auth persistence error:", err);
-    });
+  // Try local → session → in-memory.
+  // This avoids hard-failing on Safari environments where storage is blocked/partitioned. [web:21][web:85]
+  setPersistence(authInstance, browserLocalPersistence)
+    .catch(() => setPersistence(authInstance, browserSessionPersistence))
+    .catch(() => setPersistence(authInstance, inMemoryPersistence))
+    .catch((err) => console.error("Auth persistence error:", err));
 
-    return authInstance;
-  } catch (err) {
-    console.error("Failed to initialize Auth:", err);
-    throw err;
-  }
+  return authInstance;
 })();
 
+// Firestore
 export const db: Firestore = (() => {
   try {
     return getFirestore(app);
   } catch (err) {
-    console.error("Failed to initialize Database:", err);
+    console.error("Failed to initialize Firestore:", err);
     throw err;
   }
 })();
 
+// Functions
 export const functions: Functions = getFunctions(app, "us-central1");
 
 export default app;

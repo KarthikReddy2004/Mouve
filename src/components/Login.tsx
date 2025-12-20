@@ -5,18 +5,17 @@ import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
 import { Label } from "./ui/label";
-import { Loader2, X, Mail, Lock, User } from "lucide-react";
+import { Loader2, X, Mail, Lock } from "lucide-react";
 import {
   signInWithEmailAndPassword,
   createUserWithEmailAndPassword,
   signInWithPopup,
+  signInWithRedirect,
   GoogleAuthProvider,
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
 import { auth } from "../../firebase";
 import { useAuth } from "@/hooks/useAuth";
-import { signInWithRedirect } from "firebase/auth";
-import { useNavigate } from "react-router-dom";
 import "./Login.css";
 
 interface LoginModalProps {
@@ -28,7 +27,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [isSignup, setIsSignup] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
-  const [name, setName] = useState("");
   const [loading, setLoading] = useState(false);
   const [authLoading, setAuthLoading] = useState(false);
   const [error, setError] = useState("");
@@ -36,25 +34,19 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [showPasswordHint, setShowPasswordHint] = useState(false);
 
   const { user } = useAuth();
-  const navigate = useNavigate();
 
   const resetForm = () => {
     setEmail("");
     setPassword("");
-    setName("");
     setError("");
     setPasswordError("");
     setShowPasswordHint(false);
   };
 
-  const isIosSafari = () => {
+  // iOS browsers all use WebKit; treat all iOS as redirect-first. [web:21]
+  const isIOS = () => {
     if (typeof window === "undefined") return false;
-    const ua = window.navigator.userAgent;
-    return (
-      /iP(ad|hone|od)/.test(ua) &&
-      /Safari/.test(ua) &&
-      !/CriOS|FxiOS|OPiOS|EdgiOS/.test(ua)
-    );
+    return /iP(ad|hone|od)/.test(window.navigator.userAgent);
   };
 
   const storageAvailable = () => {
@@ -70,14 +62,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
   useEffect(() => {
     if (user && isOpen) {
-      if (!user.displayName) {
-        navigate("/onboarding");
-      } else {
-        navigate("/dashboard");
-      }
       onClose();
     }
-  }, [user, isOpen, onClose, navigate]);
+  }, [user, isOpen, onClose]);
 
   const validatePassword = (pwd: string): string | null => {
     if (pwd.length < 7) return "Password must be more than 6 characters.";
@@ -97,7 +84,6 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
     try {
       if (isSignup) {
-        if (!name.trim()) throw new Error("Please enter your name");
         const pwdError = validatePassword(password);
         if (pwdError) {
           setPasswordError(pwdError);
@@ -129,7 +115,9 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
             setError("This email is already registered. Try signing in.");
             break;
           case "auth/weak-password":
-            setError("Password is too weak. Use 7+ characters with uppercase, lowercase, number, and special character.");
+            setError(
+              "Password is too weak. Use 7+ characters with uppercase, lowercase, number, and special character."
+            );
             break;
           case "auth/operation-not-allowed":
             setError("Email/password accounts are not enabled.");
@@ -151,27 +139,32 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   };
 
   const handleGoogleSignIn = async () => {
+    if (user || loading) return;
+
+    setError("");
+
+    // Redirect flow needs storage to preserve the initial state; otherwise you get "missing initial state". [web:21]
     if (!storageAvailable()) {
       setError(
-        "Login is not supported in Private Browsing on Safari. Please disable it or use another browser."
+        "Google login isn't supported in Private Browsing / storage-restricted mode on Safari. Please disable it or use another browser."
       );
       return;
     }
 
-    if (user || loading) return;
-
-    setError("");
-    setLoading(true);
-
     const provider = new GoogleAuthProvider();
+    provider.setCustomParameters({ prompt: "select_account" });
 
+    // iOS: redirect (popup is unreliable on mobile Safari). [web:21]
+    if (isIOS()) {
+      setLoading(true);
+      // Do not await: it navigates away.
+      return signInWithRedirect(auth, provider);
+    }
+
+    // Desktop: popup.
     try {
-      if (isIosSafari()) {
-        await signInWithRedirect(auth, provider);
-      } else {
-        await signInWithPopup(auth, provider);
-      }
-
+      setLoading(true);
+      await signInWithPopup(auth, provider);
       setAuthLoading(true);
     } catch (err: unknown) {
       if (err instanceof FirebaseError) {
@@ -240,9 +233,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                   <h3 className="mt-4 text-lg font-medium text-gray-900">
                     {isSignup ? "Creating account..." : "Signing in..."}
                   </h3>
-                  <p className="mt-1 text-sm text-gray-500">
-                    Please wait a moment.
-                  </p>
+                  <p className="mt-1 text-sm text-gray-500">Please wait a moment.</p>
                 </div>
               ) : (
                 <>
@@ -251,31 +242,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       {isSignup ? "Create Account" : "Welcome Back"}
                     </h2>
                     <p className="login-modal-subtitle">
-                      {isSignup
-                        ? "Join MOUVE Pilates today"
-                        : "Sign in to book your class"}
+                      {isSignup ? "Join MOUVE Pilates today" : "Sign in to book your class"}
                     </p>
                   </div>
 
                   <form onSubmit={handleEmailAuth} className="login-form">
-                    {isSignup && (
-                      <div className="form-group">
-                        <Label htmlFor="name">Full Name</Label>
-                        <div className="input-icon-container">
-                          <User className="input-icon" />
-                          <Input
-                            id="name"
-                            type="text"
-                            placeholder="John Doe"
-                            value={name}
-                            onChange={(e) => setName(e.target.value)}
-                            className="form-input"
-                            required
-                            disabled={loading}
-                          />
-                        </div>
-                      </div>
-                    )}
 
                     <div className="form-group">
                       <Label htmlFor="email">Email</Label>
@@ -301,24 +272,16 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                         <Input
                           id="password"
                           type="password"
-                          placeholder={
-                            isSignup
-                              ? "7+ chars, A-z, 0-9, !@#"
-                              : "Your password"
-                          }
+                          placeholder={isSignup ? "7+ chars, A-z, 0-9, !@#" : "Your password"}
                           value={password}
                           onChange={(e) => {
                             const value = e.target.value;
                             setPassword(value);
                             if (isSignup) setPasswordError("");
-                            if (!isSignup && value === "") {
-                              setShowPasswordHint(true);
-                            }
+                            if (!isSignup && value === "") setShowPasswordHint(true);
                           }}
                           onFocus={() => {
-                            if (!isSignup && showPasswordHint) {
-                              setShowPasswordHint(true);
-                            }
+                            if (!isSignup && showPasswordHint) setShowPasswordHint(true);
                           }}
                           className="form-input"
                           required
@@ -326,28 +289,28 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                           disabled={loading}
                         />
                       </div>
+
                       {isSignup && passwordError && (
-                        <p className="password-error-message">
-                          {passwordError}
-                        </p>
+                        <p className="password-error-message">{passwordError}</p>
                       )}
+
                       {isSignup && !passwordError && password && (
                         <p className="password-hint-message">
-                          Must be 7+ characters with uppercase, lowercase,
-                          number, and special character.
+                          Must be 7+ characters with uppercase, lowercase, number, and special
+                          character.
                         </p>
                       )}
+
                       {!isSignup && showPasswordHint && !password && (
                         <p className="password-error-message">
-                          Must be 7+ characters with uppercase, lowercase,
-                          number, and special character.
+                          Must be 7+ characters with uppercase, lowercase, number, and special
+                          character.
                         </p>
                       )}
                     </div>
 
-                    {!isSignup && error && (
-                      <p className="login-error-message">{error}</p>
-                    )}
+                    {!isSignup && error && <p className="login-error-message">{error}</p>}
+
                     <div className="login-button-container">
                       <Button
                         type="submit"
@@ -407,24 +370,19 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                           <path fill="none" d="M0 0h48v48H0z"></path>
                         </svg>
                       </div>
+
                       <span className="gsi-material-button-contents">
                         {user ? "Signed In" : "Continue with Google"}
                       </span>
-                      <span style={{ display: "none" }}>
-                        Continue with Google
-                      </span>
+                      <span style={{ display: "none" }}>Continue with Google</span>
                     </div>
                   </button>
 
-                  {isSignup && error && (
-                    <p className="login-error-message">{error}</p>
-                  )}
+                  {isSignup && error && <p className="login-error-message">{error}</p>}
 
                   <div className="signup-toggle-text">
                     <span className="muted">
-                      {isSignup
-                        ? "Already have an account?"
-                        : "Don't have an account?"}
+                      {isSignup ? "Already have an account?" : "Don't have an account?"}
                     </span>{" "}
                     <button
                       type="button"

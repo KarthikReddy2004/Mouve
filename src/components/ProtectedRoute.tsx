@@ -34,7 +34,7 @@ export default function ProtectedRoute({
       if (isUserOnboarded === false && window.location.pathname !== onboardingPath) {
         navigate(onboardingPath);
       } else if (isUserOnboarded === true && window.location.pathname === onboardingPath) {
-        navigate("/dashboard"); // Redirect to dashboard if already onboarded
+        navigate("/dashboard");
       }
     }
   }, [loading, user, isUserOnboarded, navigate, onboardingPath]);
