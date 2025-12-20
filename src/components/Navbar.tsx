@@ -21,7 +21,7 @@ export default function Navbar() {
   const [dropdownPosition, setDropdownPosition] = useState({ top: 0, left: 0 });
 
   const navLinks = [
-    { href: "/", label: "Home" },
+    { href: "/dashboard", label: "Home" },
     { href: "/classes", label: "Classes" },
     { href: "/plans", label: "Plans" },
   ];

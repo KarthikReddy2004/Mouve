@@ -4,6 +4,7 @@ import { doc, getDoc } from "firebase/firestore";
 import { db } from "../firebase";
 import Maintenance from "./pages/Maintenance.tsx";
 import Navbar from "./components/Navbar";
+import PointsDock from "./components/PointsDock.tsx";
 import Footer from "./components/Footer";
 import Loading from "./components/Loading";
 import ErrorBoundary from "./components/ErrorBoundary.tsx";
@@ -63,6 +64,7 @@ function App() {
       <PointsProvider>
         <div className="flex min-h-screen flex-col">
           <Navbar />
+          <PointsDock />
           <main className="flex-1">
             <ErrorBoundary>
               <Suspense fallback={<Loading />}>

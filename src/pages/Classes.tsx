@@ -48,8 +48,8 @@ type SlotType = keyof typeof SLOT_TYPE_TO_POINT_KEY;
 interface Slot {
   id: string;
   name: string;
-  startTime: string; // HH:mm
-  endTime: string; // HH:mm
+  startTime: string;
+  endTime: string;
   type: SlotType;
   capacity: number;
   active: boolean;
@@ -304,7 +304,7 @@ const Classes: React.FC = () => {
     try {
       await bookSlot({
         slotId: confirmSlot.id,
-        date: selectedDateStr, // IST YYYY-MM-DD
+        date: selectedDateStr,
       });
 
       toast.success(`Booked! ${confirmSlot.name} at ${confirmSlot.timeLabel}`);
@@ -343,7 +343,7 @@ const Classes: React.FC = () => {
             Book Your Class
           </h1>
           <p className="text-muted-foreground mt-3 text-lg">
-            Real-time availability • Instant booking • No waiting
+            Only 1 class per category per day • Book early to secure your spot!
           </p>
         </div>
 
@@ -411,6 +411,8 @@ const Classes: React.FC = () => {
                   {category.slots.map((slot) => {
                     const spots = remainingSlots[slot.id] ?? 0;
                     const { canBook, reason } = getBookableStatus(slot);
+                    const pointKey = SLOT_TYPE_TO_POINT_KEY[slot.type];
+                    const hasNoPointsForCategory = userPoints && userPoints[pointKey] <= 0;
                     const isLow = spots <= 3 && spots > 0;
                     const isBooked = bookedSlotIds.includes(slot.id);
 
@@ -460,29 +462,39 @@ const Classes: React.FC = () => {
                               </p>
                             </div>
 
-                            <Button
-                              size="lg"
-                              onClick={() => handleBook(slot)}
-                              disabled={!canBook || isBooked}
-                              className={`min-w-32 font-semibold text-lg flex items-center gap-2 ${
-                                isBooked
-                                  ? "bg-green-600 hover:bg-green-700"
-                                  : canBook
-                                  ? "bg-primary hover:bg-primary/90 shadow-lg"
-                                  : "bg-muted text-muted-foreground cursor-not-allowed"
-                              }`}
-                            >
-                              {isBooked ? (
-                                <>
-                                  <Check className="w-5 h-5" />
-                                  Booked
-                                </>
-                              ) : canBook ? (
-                                "Book Now"
-                              ) : (
-                                reason
-                              )}
-                            </Button>
+                            {hasNoPointsForCategory && !isBooked ? (
+                              <Button
+                                size="lg"
+                                onClick={() => navigate("/plans")}
+                                className="min-w-32 font-semibold text-lg bg-amber-500 hover:bg-amber-600 text-white shadow-lg"
+                              >
+                                Buy Points
+                              </Button>
+                            ) : (
+                              <Button
+                                size="lg"
+                                onClick={() => handleBook(slot)}
+                                disabled={!canBook || isBooked}
+                                className={`min-w-32 font-semibold text-lg flex items-center gap-2 ${
+                                  isBooked
+                                    ? "bg-green-600 hover:bg-green-700"
+                                    : canBook
+                                    ? "bg-primary hover:bg-primary/90 shadow-lg"
+                                    : "bg-muted text-muted-foreground cursor-not-allowed"
+                                }`}
+                              >
+                                {isBooked ? (
+                                  <>
+                                    <Check className="w-5 h-5" />
+                                    Booked
+                                  </>
+                                ) : canBook ? (
+                                  "Book Now"
+                                ) : (
+                                  reason
+                                )}
+                              </Button>
+                            )}
                           </div>
                         </CardContent>
                       </Card>
