@@ -1,6 +1,6 @@
 "use client";
 
-import { useState, useEffect } from "react";
+import { useState, useEffect, useRef } from "react";
 import { motion, AnimatePresence } from "framer-motion";
 import { Button } from "./ui/button";
 import { Input } from "./ui/input";
@@ -14,6 +14,7 @@ import {
   GoogleAuthProvider,
 } from "firebase/auth";
 import { FirebaseError } from "firebase/app";
+import { sendPasswordResetEmail } from "firebase/auth";
 import { auth } from "../../firebase";
 import { useAuth } from "@/hooks/useAuth";
 import "./Login.css";
@@ -21,9 +22,11 @@ import "./Login.css";
 interface LoginModalProps {
   isOpen: boolean;
   onClose: () => void;
+  prefillEmail?: string;
+  focusPassword?: boolean;
 }
 
-export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
+export default function LoginModal({ isOpen, onClose, prefillEmail, focusPassword }: LoginModalProps) {
   const [isSignup, setIsSignup] = useState(true);
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
@@ -32,6 +35,10 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
   const [error, setError] = useState("");
   const [passwordError, setPasswordError] = useState("");
   const [showPasswordHint, setShowPasswordHint] = useState(false);
+  const [resetMessage, setResetMessage] = useState("");
+  const [resetLoading, setResetLoading] = useState(false);
+  const [emailError, setEmailError] = useState(false);
+  const passwordRef = useRef<HTMLInputElement>(null);
 
   const { user } = useAuth();
 
@@ -41,7 +48,25 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     setError("");
     setPasswordError("");
     setShowPasswordHint(false);
+    setResetMessage("");
+    setEmailError(false);
   };
+
+  useEffect(() => {
+    if (user) {
+      setAuthLoading(false);
+    }
+  }, [user]);
+
+  useEffect(() => {
+    if (prefillEmail) {
+      setEmail(prefillEmail);
+      setIsSignup(false); // force login mode
+      if (focusPassword) {
+        setTimeout(() => passwordRef.current?.focus(), 50);
+      }
+    }
+  }, [prefillEmail, focusPassword]);
 
   // iOS browsers all use WebKit; treat all iOS as redirect-first. [web:21]
   const isIOS = () => {
@@ -60,11 +85,53 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
     }
   };
 
-  useEffect(() => {
-    if (user && isOpen) {
-      onClose();
+  const handleForgotPassword = async () => {
+    setError("");
+    setResetMessage("");
+
+    if (!email) {
+      setEmailError(true);
+      return;
     }
-  }, [user, isOpen, onClose]);
+
+    try {
+      setResetLoading(true);
+      await sendPasswordResetEmail(auth, email, {
+        url: `https://mouve.in/reset-password?email=${encodeURIComponent(email)}`,
+      });
+      setResetMessage("Password reset email sent.Please check your inbox & spam.");
+      setIsSignup(false);
+      setPassword("");
+      setShowPasswordHint(false);
+      setEmailError(false);
+    } catch (err: unknown) {
+      if (err instanceof FirebaseError) {
+        switch (err.code) {
+          case "auth/invalid-email":
+            setError("Please enter a valid email address.");
+            break;
+          case "auth/user-not-found":
+            setError("No account found with this email.");
+            break;
+          case "auth/network-request-failed":
+            setError("Network error. Please try again.");
+            break;
+          default:
+            setError("Failed to send reset email. Try again later.");
+        }
+      } else {
+        setError("An unexpected error occurred.");
+      }
+    } finally {
+      setResetLoading(false);
+    }
+  };
+
+    useEffect(() => {
+      if (user && isOpen) {
+        onClose();
+      }
+    }, [user, isOpen, onClose]);
 
   const validatePassword = (pwd: string): string | null => {
     if (pwd.length < 7) return "Password must be more than 6 characters.";
@@ -257,8 +324,11 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                           type="email"
                           placeholder="you@example.com"
                           value={email}
-                          onChange={(e) => setEmail(e.target.value)}
-                          className="form-input"
+                          onChange={(e) => {
+                            setEmail(e.target.value);
+                            if (emailError) setEmailError(false);
+                          }}
+                          className={`form-input ${emailError ? "input-error" : ""}`}
                           required
                           disabled={loading}
                         />
@@ -270,6 +340,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                       <div className="input-icon-container">
                         <Lock className="input-icon" />
                         <Input
+                        ref={passwordRef}
                           id="password"
                           type="password"
                           placeholder={isSignup ? "7+ chars, A-z, 0-9, !@#" : "Your password"}
@@ -286,7 +357,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                           className="form-input"
                           required
                           minLength={7}
-                          disabled={loading}
+                          disabled={loading || resetLoading}
                         />
                       </div>
 
@@ -296,7 +367,7 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
 
                       {isSignup && !passwordError && password && (
                         <p className="password-hint-message">
-                          Must be 7+ characters with uppercase, lowercase, number, and special
+                          Must be 6+ characters with uppercase, lowercase, number, and special
                           character.
                         </p>
                       )}
@@ -307,9 +378,23 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                           character.
                         </p>
                       )}
+                    
+                      {!isSignup && (
+                        <div className="forgot-password-container">
+                          <button
+                            type="button"
+                            onClick={handleForgotPassword}
+                            className="forgot-password-button"
+                            disabled={resetLoading || loading}
+                          >
+                            {resetLoading ? "Sending..." : "Forgot password?"}
+                          </button>
+                        </div>
+                      )}
                     </div>
 
                     {!isSignup && error && <p className="login-error-message">{error}</p>}
+                    {resetMessage && (<p className="login-success-message">{resetMessage}</p>)}
 
                     <div className="login-button-container">
                       <Button
@@ -369,10 +454,17 @@ export default function LoginModal({ isOpen, onClose }: LoginModalProps) {
                           ></path>
                           <path fill="none" d="M0 0h48v48H0z"></path>
                         </svg>
+                        {loading && (
+                          <Loader2 className="h-4 w-4 animate-spin text-gray-500" />
+                        )}
                       </div>
 
                       <span className="gsi-material-button-contents">
-                        {user ? "Signed In" : "Continue with Google"}
+                        {loading
+                          ? "Signing in…"
+                          : user
+                          ? "Signed In"
+                          : "Continue with Google"}
                       </span>
                       <span style={{ display: "none" }}>Continue with Google</span>
                     </div>

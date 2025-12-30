@@ -1,7 +1,8 @@
 "use client";
 
 import { motion } from "framer-motion";
-import { useState } from "react";
+import { useState, useEffect } from "react";
+import { useSearchParams } from "react-router-dom";
 import { Button } from "@/components/ui/button";
 import { Card } from "@/components/ui/card";
 import LoginModal from "@/components/Login";
@@ -65,6 +66,18 @@ const testimonials = Object.freeze([
 /* Landing Page Component */
 export default function LandingPage() {
   const [loginOpen, setLoginOpen] = useState(false);
+  const [prefillEmail, setPrefillEmail] = useState("");
+  const [focusPassword, setFocusPassword] = useState(false);
+  const [params] = useSearchParams();
+  const emailFromQuery = params.get("email");
+
+  useEffect(() => {
+    if (emailFromQuery) {
+      setPrefillEmail(emailFromQuery);
+      setFocusPassword(true);
+      setLoginOpen(true);
+    }
+  }, [emailFromQuery]);
 
   return (
     <>
@@ -286,7 +299,12 @@ export default function LandingPage() {
         </Button>
       </section>
 
-      <LoginModal isOpen={loginOpen} onClose={() => setLoginOpen(false)} />
+      <LoginModal
+        isOpen={loginOpen}
+        onClose={() => setLoginOpen(false)}
+        prefillEmail={prefillEmail}
+        focusPassword={focusPassword}
+      />
     </>
   );
 }

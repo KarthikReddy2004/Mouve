@@ -21,6 +21,7 @@ const Classes = lazy(() => import("./pages/Classes"));
 const Plans = lazy(() => import("./pages/Plans"));
 const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
+const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
 function App() {
   const { user, loading } = useAuth();
@@ -82,6 +83,7 @@ function App() {
             <Suspense fallback={<Loading />}>
               <Routes>
                 <Route path="/" element={<HeroSection />} />
+                <Route path="/reset-password" element={<ResetPassword />} />
                 <Route path="/privacy-policy" element={<PrivacyPolicy />} />
                 <Route path="/terms-and-conditions" element={<TermsAndConditions />} />
                 <Route element={<ProtectedRoute />}>
