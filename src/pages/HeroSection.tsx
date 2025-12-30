@@ -29,19 +29,19 @@ const classes = Object.freeze([
 const instructors = Object.freeze([
   {
     name: "Hemanth",
-    role: "Lifestyle coach • contest prep coach • bodybuilder • powerlifter • sports nutritionist • pilates instructor",
+    role: "Lifestyle Coach • Contest Prep Coach • Bodybuilder • Powerlifter • Sports Nutritionist • Pilates Instructor",
     desc: "Reformer Certified • 10+ years experience",
     img: "/Hemanth.jpeg",
   },
   {
     name: "Yashoda Gangadhar",
-    role: "Yoga trainer • Pilates coach • Clinical Nutritionist",
+    role: "Yoga Trainer • Pilates Coach • Clinical Nutritionist",
     desc: "Reformer Certified • 5+ years experience",
     img: "/Yashoda.jpeg",
   },
   {
-    name: "Sunil",
-    role: "Fitness coach • pilates instructor",
+    name: "Sunil Reddy",
+    role: "Fitness Coach • Pilates Instructor • Performance Nutritionist",
     desc: "Reformer Certified • 5+ years experience",
     img: "/Sunil.jpeg",
   },
