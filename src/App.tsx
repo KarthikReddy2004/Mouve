@@ -23,6 +23,9 @@ const Dashboard = lazy(() => import("./pages/Dashboard"));
 const Onboarding = lazy(() => import("./pages/Onboarding"));
 const ResetPassword = lazy(() => import("./pages/ResetPassword"));
 
+const MAINTENANCE_CACHE_KEY = "mouve:maintenance";
+const MAINTENANCE_TTL = 10 * 60 * 1000;
+
 function App() {
   const { user, loading } = useAuth();
   const [isOpen, setIsOpen] = useState(true);
@@ -44,31 +47,45 @@ function App() {
   }, [user, loading, navigate, location.pathname]);
 
   useEffect(() => {
-    const fetchMaintenanceStatus = async () => {
+    const loadMaintenanceStatus = async () => {
       try {
-        const docRef = doc(db, "Users", "Settings");
-        const docSnap = await getDoc(docRef);
-
-        if (docSnap.exists()) {
-          const data = docSnap.data();
-          setIsOpen(data.Open);
-          setAllowedUsers(data.AllowedUsers || []);
-        } else {
-          setIsOpen(true);
+        const cachedRaw = sessionStorage.getItem(MAINTENANCE_CACHE_KEY);
+        if (cachedRaw) {
+          const cached = JSON.parse(cachedRaw);
+          const isExpired =
+            !cached.timestamp || Date.now() - cached.timestamp > MAINTENANCE_TTL;
+          if (!isExpired) {
+            setIsOpen(cached.Open ?? true);
+            setAllowedUsers(cached.AllowedUsers ?? []);
+            setMaintenanceLoading(false);
+            return;
+          }
         }
-      } catch (error) {
-        console.error("Error fetching maintenance status:", error);
+
+        const snap = await getDoc(doc(db, "Users", "Settings"));
+        const data = snap.exists()
+          ? snap.data()
+          : { Open: true, AllowedUsers: [] };
+        const normalized = {
+          Open: data.Open ?? true,
+          AllowedUsers: data.AllowedUsers ?? [],
+          timestamp: Date.now(),
+        };
+
+        setIsOpen(normalized.Open);
+        setAllowedUsers(normalized.AllowedUsers);
+        sessionStorage.setItem(MAINTENANCE_CACHE_KEY, JSON.stringify(normalized));
+      } catch (err) {
+        console.error("Maintenance fetch failed:", err);
         setIsOpen(true);
       } finally {
         setMaintenanceLoading(false);
       }
     };
-
-    fetchMaintenanceStatus();
+    loadMaintenanceStatus();
   }, []);
 
   if (loading || maintenanceLoading) return <Loading />;
-
   if (!isOpen && user && !allowedUsers.includes(user.email || "")) {
     return <Maintenance />;
   }
