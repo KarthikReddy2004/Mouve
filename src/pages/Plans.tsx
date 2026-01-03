@@ -182,7 +182,7 @@ Plan Name -
 Plan Code -
 *${plan.code}*
 `;
-  const whatsappUrl = `https://wa.me/+918074078804?text=${encodeURIComponent(message)}`;
+  const whatsappUrl = `https://wa.me/+919515965360?text=${encodeURIComponent(message)}`;
   return (
     <div className="fixed inset-0 z-50 flex items-center justify-center p-4">
       <div

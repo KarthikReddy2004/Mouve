@@ -192,7 +192,7 @@ export default function Footer() {
     <a href="https://www.facebook.com" target="_blank" rel="noopener noreferrer" aria-label="Facebook">
       <FacebookIcon />
     </a>
-    <a href="https://wa.me/" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
+    <a href="https://wa.me/+919515965360" target="_blank" rel="noopener noreferrer" aria-label="WhatsApp">
       <WhatsAppIcon />
     </a>
     <a href="https://twitter.com" target="_blank" rel="noopener noreferrer" aria-label="Twitter">
